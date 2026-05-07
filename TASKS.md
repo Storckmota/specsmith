@@ -55,7 +55,7 @@
 - [x] Build TestFileOutput component
 - [x] Build CoverageScore component
 - [x] Build GapReport component
-- [ ] Verify build passes (npm run build)
+- [x] Verify build passes (npm run build)
 - [ ] Manual smoke test of demo flow
 
 ---
@@ -87,12 +87,30 @@
 
 ## Phase 5: Demo Polish
 
-- [ ] Review UI for demo-readiness
-- [ ] Ensure agent timeline is clearly visible
-- [ ] Ensure feedback loop events are visible
-- [ ] Add provider mode display to UI
+- [x] Review UI for demo-readiness
+- [x] Ensure agent timeline is clearly visible
+- [x] Ensure feedback loop events are visible
+- [x] Add provider mode display to UI
 - [ ] Review all example specs for demo quality
 - [ ] Run full demo flow end-to-end
+
+### Frontend Polish (completed 2026-05-07)
+- [x] Reduce hero vertical whitespace, tighten section rhythm
+- [x] Replace plain-text feature list with purple-dot badge chips
+- [x] Strengthen input card border, add card header label
+- [x] Improve example button, textarea, and selector styling
+- [x] Enlarge and strengthen primary CTA button with spinner
+- [x] Redesign "How it works" section: numbered circles, gradient connector, feedback-loop badge on QA Reviewer
+- [x] Analyze page: expand summary to 6-stat grid (critical, high, medium, total risks, tests, score)
+- [x] Analyze page: add framework + providerMode badges to summary header
+- [x] AgentProgress: step-number circles, SVG status icons, styled status pills, divide-y layout
+- [x] CoverageScore: add linear progress bar + quality label alongside circular gauge
+- [x] RiskRegistry: severity dot accent, count badges in header, improved layout
+- [x] TestMatrix: improved filter bar, chevron icon, linked-risks section in expanded row
+- [x] TestFileOutput: fake window chrome, line count display, SVG copy icon
+- [x] GapReport: SVG icons, improved empty state, revision notice redesign
+- [x] Sticky nav on both pages with backdrop-blur
+- [x] Build verified: npm run build passes
 
 ---
 
