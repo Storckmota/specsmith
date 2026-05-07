@@ -85,13 +85,53 @@ No API keys required in mock mode.
 | Variable | Values | Description |
 |---|---|---|
 | `PROVIDER` | `mock` \| `api` \| `amd` | AI provider mode |
-| `API_MODEL` | e.g. `gpt-4o` | Model name for API mode |
-| `API_BASE_URL` | URL | OpenAI-compatible base URL |
-| `API_KEY` | string | API key for API mode |
+| `API_KEY` | `sk-...` | API key — **required** for `PROVIDER=api` |
+| `API_BASE_URL` | URL | OpenAI-compatible base URL (default: `https://api.openai.com/v1`) |
+| `API_MODEL` | e.g. `gpt-4o` | Model name for API mode (default: `gpt-4o`) |
 | `AMD_ENDPOINT` | URL | vLLM endpoint for AMD mode |
 | `AMD_MODEL` | e.g. `Qwen/Qwen2.5-72B-Instruct` | Model name for AMD mode |
 
 Default: `PROVIDER=mock`. App works fully without any API keys.
+
+> **Security**: Never commit `.env.local`. API keys are only read server-side and are never exposed to the browser.
+
+---
+
+## Testing Provider Modes
+
+### Mock mode (no keys required)
+
+```bash
+# .env.local
+PROVIDER=mock
+```
+
+Works out of the box. Returns realistic fixture data through the full 5-agent pipeline. Best for local development and demos.
+
+### API mode (OpenAI-compatible endpoint)
+
+```bash
+# .env.local
+PROVIDER=api
+API_KEY=sk-...
+API_BASE_URL=https://api.openai.com/v1   # or any compatible endpoint
+API_MODEL=gpt-4o
+```
+
+Any OpenAI-compatible provider works: OpenAI, Together AI, Fireworks, Groq, or a local vLLM instance.
+
+If `API_KEY` is missing when `PROVIDER=api`, the app fails immediately with a clear error message.
+
+### AMD mode (planned, not active yet)
+
+```bash
+# .env.local
+PROVIDER=amd
+AMD_ENDPOINT=http://<amd-cloud-ip>:8000
+AMD_MODEL=Qwen/Qwen2.5-72B-Instruct
+```
+
+AMD mode calls a vLLM server running Qwen on AMD MI300X. The interface is identical to API mode. Configuration is documented in `docs/amd-setup.md`. AMD mode is not yet active in this build.
 
 ---
 
@@ -103,8 +143,10 @@ Default: `PROVIDER=mock`. App works fully without any API keys.
 - [x] Homepage UI
 - [x] Analyze page UI
 - [x] Zod schemas for output contract
-- [ ] API mode (OpenAI-compatible)
-- [ ] AMD/Qwen mode
+- [x] API mode (OpenAI-compatible, robust with timeout + error surfacing)
+- [x] Shared JSON extraction utility (handles markdown fences, leading prose)
+- [x] Improved agent prompts for real model compatibility
+- [ ] AMD/Qwen mode (interface ready, endpoint not configured)
 - [ ] AMD Developer Cloud proof
 
 ---

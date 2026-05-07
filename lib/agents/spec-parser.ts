@@ -1,40 +1,37 @@
 import type { AiProvider } from "../providers/index";
 import { ParsedSpecSchema, type ParsedSpec, type InputType } from "../schemas/analysis";
+import { extractJson } from "../utils/json";
 
 const SYSTEM_PROMPT = `You are a Spec Parser agent. Extract structured information from product specifications.
-You must respond with valid JSON only. No explanation. No markdown. No code blocks.`;
+
+Output rules:
+- Return ONLY a raw JSON object. No prose, no explanation, no markdown, no code fences.
+- Your response must start with { and end with }.
+- Match the schema exactly — no extra fields.`;
 
 export async function runSpecParser(
   provider: AiProvider,
   specText: string,
   inputType: InputType
 ): Promise<ParsedSpec> {
-  const userPrompt = `Extract structured information from this ${inputType} specification:
+  const userPrompt = `Extract structured information from this ${inputType} specification and return valid JSON only:
 
 ${specText}
 
-Return JSON matching this schema:
+Return a JSON object with exactly these fields:
 {
   "title": "short title for this spec",
   "detectedScope": "one sentence describing the scope",
   "userStories": ["array of user stories found or inferred"],
   "businessRules": ["array of business rules and constraints"],
-  "apiEndpoints": ["array of API endpoints if any"],
+  "apiEndpoints": ["array of API endpoints if any, empty array if none"],
   "assumptions": ["array of implicit assumptions"],
   "constraints": ["array of explicit constraints"]
-}`;
+}
+
+No markdown. No explanation. Raw JSON only.`;
 
   const raw = await provider.complete(SYSTEM_PROMPT, userPrompt);
   const json = extractJson(raw);
   return ParsedSpecSchema.parse(json);
-}
-
-function extractJson(raw: string): unknown {
-  const trimmed = raw.trim();
-  // Strip markdown code fences if present
-  const match = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (match) {
-    return JSON.parse(match[1]);
-  }
-  return JSON.parse(trimmed);
 }

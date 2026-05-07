@@ -154,6 +154,8 @@ specsmith/
       amd-provider.ts
     schemas/
       analysis.ts
+    utils/
+      json.ts          — shared JSON extraction for model outputs
   agents/          — development agent guides
   docs/
     amd-setup.md
@@ -163,6 +165,34 @@ specsmith/
     user-auth-openapi.yaml
   .env.example
 ```
+
+---
+
+## JSON Extraction Utility
+
+All agents parse structured JSON from model responses via `lib/utils/json.ts`.
+
+```typescript
+extractJson(raw: string): unknown
+```
+
+Handles common LLM output issues in order:
+1. Strips ` ```json ... ``` ` or ` ``` ... ``` ` markdown fences
+2. Attempts direct `JSON.parse`
+3. Finds the first `{` or `[` character and parses from there (handles leading prose)
+4. Throws a descriptive error with an output preview if all attempts fail
+
+Each agent calls `extractJson` before passing the result to Zod schema validation.
+
+---
+
+## API Provider Security
+
+- `API_KEY` is read server-side only (`lib/providers/api-provider.ts`)
+- The key is never serialized into any response or logged
+- If `API_KEY` is missing when `PROVIDER=api`, the constructor throws immediately before any request is made
+- API error responses are surfaced as plain error messages (no key leakage)
+- Requests time out after 90 seconds via `AbortController`
 
 ---
 

@@ -62,14 +62,21 @@
 
 ## Phase 3: Real API Provider
 
-- [ ] Implement ApiProvider (lib/providers/api-provider.ts)
-- [ ] Implement AmdProvider (lib/providers/amd-provider.ts)
-- [ ] Write actual agent prompts for Spec Parser
-- [ ] Write actual agent prompts for Risk Mapper
-- [ ] Write actual agent prompts for Test Planner
-- [ ] Write actual agent prompts for Test Writer
-- [ ] Write actual agent prompts for QA Reviewer
-- [ ] Test with OpenAI-compatible provider
+- [x] Implement ApiProvider (lib/providers/api-provider.ts)
+  - Early fail if API_KEY missing
+  - AbortController timeout (90s)
+  - Error body surfacing without key exposure
+- [x] Implement AmdProvider placeholder (lib/providers/amd-provider.ts)
+- [x] Create lib/utils/json.ts — shared extractJson (fence stripping, first-brace extraction)
+- [x] Update all agents to use shared extractJson (removed local duplicates)
+- [x] Write agent prompts for Spec Parser (explicit JSON-only instructions)
+- [x] Write agent prompts for Risk Mapper (sourceRef guidance, no line numbers)
+- [x] Write agent prompts for Test Planner (schema-exact, revision prompt preserved)
+- [x] Write agent prompts for Test Writer (JSON object, code field guidance)
+- [x] Update .env.example with clear inline documentation
+- [x] Update README.md — API mode section, testing provider modes section
+- [x] Update ARCHITECTURE.md — JSON utility, API provider security
+- [ ] Test with OpenAI-compatible provider (manual)
 
 ---
 
