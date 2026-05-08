@@ -188,11 +188,8 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-3.5">
 
           {/* Wordmark */}
-          <a href="/" className="group flex flex-shrink-0 items-center gap-2.5">
+          <a href="/" className="flex flex-shrink-0 items-center">
             <Wordmark className="h-[22px] w-auto" />
-            <span className="hidden text-[9px] font-medium uppercase tracking-[0.28em] text-violet-400/60 transition-colors group-hover:text-violet-400 sm:block">
-              QA Forge
-            </span>
           </a>
 
           {/* Desktop nav links */}
