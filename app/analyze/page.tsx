@@ -10,9 +10,26 @@ import TestFileOutput from "@/components/TestFileOutput";
 import CoverageScore from "@/components/CoverageScore";
 import GapReport from "@/components/GapReport";
 
+function useReveal() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("is-visible");
+        });
+      },
+      { threshold: 0.05, rootMargin: "0px 0px -24px 0px" }
+    );
+    document.querySelectorAll("[data-reveal]").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
+
 export default function AnalyzePage() {
   const router = useRouter();
   const [result, setResult] = useState<AnalysisResult | null>(null);
+
+  useReveal();
 
   useEffect(() => {
     const stored = sessionStorage.getItem("specsmith-result");
@@ -94,7 +111,9 @@ export default function AnalyzePage() {
       </nav>
 
       <main className="mx-auto max-w-7xl space-y-5 px-6 py-8">
-        <section className="grid gap-5 lg:grid-cols-[1.4fr_0.9fr]">
+
+        {/* Summary + Coverage Score */}
+        <section data-reveal className="grid gap-5 lg:grid-cols-[1.4fr_0.9fr]">
           <div className="rounded-2xl border border-[#202A44] bg-[#10172A] p-6">
             <div className="mb-5 flex flex-wrap gap-2">
               <span className="rounded-full border border-[#202A44] bg-[#0B1020] px-2.5 py-1 text-xs font-medium text-slate-400">
@@ -127,9 +146,17 @@ export default function AnalyzePage() {
           <CoverageScore coverage={result.coverage} />
         </section>
 
-        <AgentProgress timeline={result.agentTimeline} providerMode={result.providerMode} />
+        {/* Agent Timeline */}
+        <div data-reveal style={{ transitionDelay: "80ms" }}>
+          <AgentProgress timeline={result.agentTimeline} providerMode={result.providerMode} />
+        </div>
 
-        <section className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]">
+        {/* Gap / Risk + Test Matrix / Test File */}
+        <section
+          data-reveal
+          style={{ transitionDelay: "120ms" }}
+          className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]"
+        >
           <div className="space-y-5">
             <GapReport coverage={result.coverage} />
             <RiskRegistry risks={result.riskRegistry} />
@@ -158,7 +185,7 @@ function StatCell({
   valueClass: string;
 }) {
   return (
-    <div className="rounded-xl border border-[#202A44] bg-[#060816]/55 px-4 py-3">
+    <div className="rounded-xl border border-[#202A44] bg-[#060816]/55 px-4 py-3 transition hover:-translate-y-0.5">
       <div className={`text-2xl font-semibold tabular-nums ${valueClass}`}>{value}</div>
       <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-slate-600">{label}</div>
     </div>

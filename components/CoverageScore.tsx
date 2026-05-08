@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import type { CoverageResult } from "@/lib/schemas/analysis";
 
 interface Props {
@@ -8,6 +9,12 @@ interface Props {
 
 export default function CoverageScore({ coverage }: Props) {
   const score = coverage.score;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 80);
+    return () => clearTimeout(t);
+  }, []);
 
   const getColors = (s: number) => {
     if (s >= 80) return { text: "text-emerald-300", ring: "stroke-emerald-400", glow: "shadow-emerald-500/20", label: "Operational" };
@@ -18,10 +25,11 @@ export default function CoverageScore({ coverage }: Props) {
   const colors = getColors(score);
   const circumference = 2 * Math.PI * 44;
   const dashOffset = circumference - (score / 100) * circumference;
+  const displayOffset = mounted ? dashOffset : circumference;
 
   return (
-    <div className={`overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] backdrop-blur-md shadow-2xl ${colors.glow}`}>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-6 py-4">
+    <div className={`overflow-hidden rounded-2xl border border-[#202A44] bg-[#10172A] shadow-2xl ${colors.glow}`}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#202A44] px-6 py-4">
         <div>
           <h2 className="text-sm font-semibold text-slate-100">Coverage Score</h2>
           <p className="mt-0.5 text-xs text-slate-500">Completeness across the generated risk registry.</p>
@@ -37,7 +45,7 @@ export default function CoverageScore({ coverage }: Props) {
         <div className="flex items-center gap-6">
           <div className="relative shrink-0">
             <svg width="112" height="112" className="-rotate-90">
-              <circle cx="56" cy="56" r="44" fill="none" stroke="rgba(148,163,184,0.14)" strokeWidth="8" />
+              <circle cx="56" cy="56" r="44" fill="none" stroke="rgba(148,163,184,0.12)" strokeWidth="8" />
               <circle
                 cx="56"
                 cy="56"
@@ -46,8 +54,8 @@ export default function CoverageScore({ coverage }: Props) {
                 strokeWidth="8"
                 strokeLinecap="round"
                 strokeDasharray={circumference}
-                strokeDashoffset={dashOffset}
-                className={`transition-all duration-700 ${colors.ring}`}
+                strokeDashoffset={displayOffset}
+                className={`transition-[stroke-dashoffset] duration-1000 ease-out ${colors.ring}`}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -60,7 +68,7 @@ export default function CoverageScore({ coverage }: Props) {
             <div className={`text-sm font-semibold ${colors.text}`}>{colors.label}</div>
             <p className="mt-2 text-sm leading-6 text-slate-300">{coverage.summary}</p>
             {coverage.reviewerFeedback && (
-              <p className="mt-3 border-l border-white/10 pl-3 text-xs italic leading-5 text-slate-500">
+              <p className="mt-3 border-l border-[#202A44] pl-3 text-xs italic leading-5 text-slate-500">
                 {coverage.reviewerFeedback}
               </p>
             )}
