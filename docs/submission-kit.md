@@ -8,7 +8,7 @@
 | Team name | SpecSmith PopLabs |
 | Track | AI Agents & Agentic Workflows |
 | Public demo URL | https://specsmith.vercel.app/ |
-| GitHub repo | TODO — add repo URL before submission |
+| GitHub repo | https://github.com/Storckmota/specsmith |
 | Hackathon | AMD Developer Hackathon by lablab.ai |
 
 **One-line pitch:**

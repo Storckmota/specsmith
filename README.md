@@ -81,7 +81,7 @@ Why this matters for QA:
 ## Local Setup
 
 ```bash
-git clone <repo>
+git clone https://github.com/Storckmota/specsmith
 cd specsmith
 npm install
 cp .env.example .env.local

@@ -6,6 +6,8 @@
 - **Track**: AI Agents & Agentic Workflows
 - **Team Name**: SpecSmith PopLabs
 - **Project Name**: SpecSmith
+- **GitHub Repo**: https://github.com/Storckmota/specsmith
+- **Public Demo**: https://specsmith.vercel.app/
 - **Approved Brand Image**: `public/brand/specsmith-logo.png`
 - **Submission Deadline**: TBD — check lablab.ai event page
 
