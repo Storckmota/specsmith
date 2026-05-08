@@ -46,9 +46,11 @@ _(148 characters — within the 150–200 character guidance)_
 
 **Public demo**: The live demo at https://specsmith.vercel.app/ runs in `PROVIDER=mock` mode — fully deterministic, no API keys, no cost, no external calls. It demonstrates the complete UX and agent pipeline structure without any auth wall.
 
-**Controlled API mode**: The codebase supports `PROVIDER=api`, which calls any OpenAI-compatible endpoint. This mode was validated end-to-end with `gpt-4o-mini`: real model output parsed correctly through all five pipeline stages, including the Test Writer's delimiter format and the Zod schema case normalization.
+**Controlled API mode**: The codebase supports `PROVIDER=api`, which calls any OpenAI-compatible endpoint. This mode was validated end-to-end with two models: `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (via OpenRouter). Both produced schema-valid output through all five pipeline stages, including the Test Writer's delimiter format and the Zod schema case normalization. The public demo runs in `PROVIDER=mock` mode — deterministic, no API keys, no external calls.
 
-**AMD/Qwen/MI300X planned architecture**: SpecSmith is designed for AMD MI300X inference. The provider abstraction (`PROVIDER=amd`) targets a vLLM server running Qwen on AMD Developer Cloud through an identical OpenAI-compatible interface. This architecture allows the same 5-agent pipeline to switch from OpenAI to Qwen simply by changing environment variables — no code changes required. AMD mode is not yet active in this build pending GPU credit allocation and vLLM endpoint configuration.
+**Qwen validation**: `qwen/qwen-2.5-72b-instruct` was validated through OpenRouter using the `PROVIDER=api` path. HTTP 200, all 5 agents passed, QA Reviewer score 95/100, no false AMD claim. See `docs/qwen-validation.md` for the full evidence record.
+
+**AMD/MI300X planned architecture**: SpecSmith is designed for AMD MI300X inference. The provider abstraction (`PROVIDER=amd`) targets a vLLM server running Qwen on AMD Developer Cloud through an identical OpenAI-compatible interface. This architecture allows the same 5-agent pipeline to switch from OpenAI to Qwen simply by changing environment variables — no code changes required. AMD Developer Cloud mode is not yet active in this build pending GPU credit allocation. Qwen model readiness is confirmed by the OpenRouter validation above.
 
 ---
 
@@ -166,13 +168,13 @@ And the QA Reviewer is deterministic code, not another LLM call. It checks cover
 
 "Under the hood: Next.js 16, TypeScript, Zod v4 for strict schema validation across every agent output, and a provider abstraction that supports mock, API, and AMD mode.
 
-The public demo runs in mock mode — deterministic, no API keys, no cost. The codebase was validated end-to-end with a real gpt-4o-mini model through the full 5-agent pipeline, including real OpenAPI specs."
+The public demo runs in mock mode — deterministic, no API keys, no cost. The codebase was validated end-to-end with real models: gpt-4o-mini and Qwen 2.5 72B through the full 5-agent pipeline, including real OpenAPI specs."
 
 ---
 
 **[AMD STORY — 2:35–2:50]**
 
-"SpecSmith is designed for AMD MI300X inference. The PROVIDER=amd mode targets a vLLM server running Qwen on AMD Developer Cloud. Long product specs and OpenAPI documents need the context window and memory bandwidth that MI300X provides. Switching from OpenAI to Qwen requires only a change in environment variables — the pipeline stays identical."
+"SpecSmith is designed for AMD MI300X inference. The PROVIDER=amd mode targets a vLLM server running Qwen on AMD Developer Cloud. Long product specs and OpenAPI documents need the context window and memory bandwidth that MI300X provides. Switching from OpenAI to Qwen requires only a change in environment variables — the pipeline stays identical. Qwen readiness is confirmed: qwen-2.5-72b-instruct drove the full 5-agent pipeline through OpenRouter with a 95/100 coverage score."
 
 ---
 
@@ -194,7 +196,8 @@ Capture these screenshots before submission:
 - [ ] **Generated test file** — real Playwright/Jest/Pytest code, "executable draft" label visible
 - [ ] **Coverage score and gap report** — numeric score, gaps listed, reviewer feedback section
 - [ ] **Provider mode badge** — "Mock mode" indicator in the report summary or agent timeline
-- [ ] **Optional: API local proof** — terminal showing `PROVIDER=api` run with gpt-4o-mini, score visible in browser
+- [ ] **Optional: API local proof** — terminal showing `PROVIDER=api` run, score visible in browser (gpt-4o-mini or Qwen)
+- [ ] **Optional: Qwen validation** — browser showing Forge Report driven by `qwen/qwen-2.5-72b-instruct` via OpenRouter
 - [ ] **Optional: AMD Developer Cloud credit request** — dashboard screenshot if GPU credits were approved before deadline
 
 ---
@@ -214,8 +217,9 @@ SpecSmith is designed for AMD Developer Cloud and targets AMD MI300X inference. 
 **What is true:**
 - SpecSmith's provider abstraction (`lib/providers/index.ts`) supports `mock`, `api`, and `amd` modes selected by a single environment variable.
 - `PROVIDER=amd` calls an OpenAI-compatible vLLM endpoint — the same interface that AMD Developer Cloud vLLM instances expose.
-- The pipeline was validated end-to-end with a real model (`gpt-4o-mini` via `PROVIDER=api`), which confirms the 5-agent pipeline, Zod validation, and delimiter-based Test Writer format work with real LLM output.
-- Qwen/Qwen2.5-72B-Instruct is the target model for AMD mode: strong instruction-following, large context window, and good code generation.
+- The pipeline was validated end-to-end with two real models via `PROVIDER=api`: `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (OpenRouter). Both confirm the 5-agent pipeline, Zod validation, and delimiter-based Test Writer format work with real LLM output.
+- **Qwen validation passed**: `qwen/qwen-2.5-72b-instruct` drove the full pipeline through OpenRouter — HTTP 200, 28 test cases generated, score 95/100. See `docs/qwen-validation.md`.
+- Qwen/Qwen2.5-72B-Instruct is the target model for AMD mode: strong instruction-following, large context window, and good code generation. Qwen readiness is now confirmed by live pipeline evidence.
 - AMD MI300X provides the VRAM and memory bandwidth to serve large models for multi-agent inference at this context size.
 
 **What is not yet true:**

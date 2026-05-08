@@ -7,9 +7,15 @@
 
 ## Summary
 
-SpecSmith's full 5-agent QA pipeline was successfully validated end-to-end using a Qwen model
-through an OpenAI-compatible provider endpoint. The pipeline ran without code changes — only
-environment variables were updated.
+**Qwen validation passed through OpenRouter using an OpenAI-compatible API provider.**
+
+SpecSmith's full 5-agent QA pipeline was successfully validated end-to-end using
+`qwen/qwen-2.5-72b-instruct` via OpenRouter. The pipeline ran without code changes — only
+environment variables were updated (`PROVIDER=api`, `API_BASE_URL`, `API_MODEL`).
+
+One controlled validation run was executed using the User Auth OpenAPI 3.0.3 example spec
+with the Playwright framework. All five agents returned schema-valid output and the pipeline
+returned HTTP 200.
 
 ---
 

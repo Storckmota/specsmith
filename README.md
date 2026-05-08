@@ -74,7 +74,9 @@ Why this matters for QA:
 - Qwen's strong instruction-following and code generation capabilities are well-suited for structured test generation
 - AMD MI300X provides the memory bandwidth and VRAM capacity to serve large models efficiently for multi-agent inference
 
-**Current status**: AMD mode is documented and ready to configure. See `docs/amd-setup.md` for the integration checklist.
+**Qwen validation**: `qwen/qwen-2.5-72b-instruct` was validated through OpenRouter using `PROVIDER=api`. The full 5-agent pipeline returned HTTP 200, generated 28 Playwright test cases, and scored 95/100 on the QA Reviewer — without any code changes. See [`docs/qwen-validation.md`](docs/qwen-validation.md) for the complete evidence record.
+
+**AMD Developer Cloud status**: AMD mode is documented and ready to configure pending GPU credit allocation. See `docs/amd-setup.md`.
 
 ---
 
@@ -134,7 +136,7 @@ API_BASE_URL=https://api.openai.com/v1   # or any compatible endpoint
 API_MODEL=gpt-4o
 ```
 
-Any OpenAI-compatible provider works: OpenAI, Together AI, Fireworks, Groq, or a local vLLM instance.
+Any OpenAI-compatible provider works: OpenAI, Together AI, Fireworks, Groq, OpenRouter (Qwen), or a local vLLM instance.
 
 If `API_KEY` is missing when `PROVIDER=api`, the app fails immediately with a clear error message.
 
@@ -162,7 +164,8 @@ AMD mode calls a vLLM server running Qwen on AMD MI300X. The interface is identi
 - [x] API mode (OpenAI-compatible, robust with timeout + error surfacing)
 - [x] Shared JSON extraction utility (handles markdown fences, leading prose)
 - [x] Improved agent prompts for real model compatibility
-- [ ] AMD/Qwen mode (interface ready, endpoint not configured)
+- [x] Qwen validation — `qwen/qwen-2.5-72b-instruct` via OpenRouter, full pipeline, score 95/100
+- [ ] AMD/Qwen mode (interface ready, endpoint not configured — pending GPU credits)
 - [ ] AMD Developer Cloud proof
 
 ---
