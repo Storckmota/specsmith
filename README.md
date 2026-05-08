@@ -88,7 +88,7 @@ Forge Report
 | `api` / Qwen 2.5 72B | ✅ Validated | OpenRouter OpenAI-compatible path |
 | `amd` / vLLM / Qwen | 🟡 Planned | Pending AMD Developer Cloud credits |
 
-The `amd` provider mode is implemented and documented. No live AMD Developer Cloud runtime has been configured — AMD mode is pending GPU credit allocation.
+The `amd` provider path is present and documented, but not live. No AMD Developer Cloud runtime has been configured — AMD mode is pending GPU credit allocation.
 
 ---
 
@@ -155,7 +155,7 @@ Forge Report
 |---|---|
 | `PROVIDER=mock` | Returns deterministic fixture data through all five agents. No API key required. |
 | `PROVIDER=api` | Calls any OpenAI-compatible `/chat/completions` endpoint. Requires `API_KEY`. |
-| `PROVIDER=amd` | Calls a vLLM endpoint running Qwen on AMD Developer Cloud. Same interface as API mode. |
+| `PROVIDER=amd` | Designed to call a configured vLLM endpoint running Qwen on AMD Developer Cloud. Same interface as API mode. |
 
 ---
 
