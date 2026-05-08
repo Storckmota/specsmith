@@ -83,11 +83,10 @@ Forge Report
 
 | Mode | Status | Notes |
 |---|---|---|
-| Mode | Status | Notes |
-|---|---|---|
 | `mock` | ✅ Available | Safe fallback — no API key, deterministic fixture output |
-| `api` / gpt-4o-mini | ✅ Validated | Controlled local/provider test |
-| `api` / Qwen 2.5 72B | ✅ Public demo | OpenRouter — `ENABLE_PROVIDER_FALLBACK=true` for reliability |
+| `api` / gpt-4o-mini | ✅ Validated | Controlled local test (OpenAI) |
+| `api` / Qwen 2.5 72B | ✅ Validated | Full pipeline evidence — too slow for Vercel, see docs |
+| `api` / Qwen 2.5 7B | ✅ Public demo | OpenRouter, `API_TIMEOUT_MS=8000`, `ENABLE_PROVIDER_FALLBACK=true` |
 | `amd` / vLLM / Qwen | 🟡 Planned | Pending AMD Developer Cloud credits |
 
 The `amd` provider path is present and documented, but not live. No AMD Developer Cloud runtime has been configured — AMD mode is pending GPU credit allocation.
@@ -127,7 +126,7 @@ SpecSmith was designed so the provider layer can point to a vLLM endpoint runnin
 | AI provider abstraction | OpenAI-compatible chat completions interface |
 | Provider modes | `mock` (fixtures), `api` (any OpenAI-compatible endpoint), `amd` (planned) |
 | Validated models | gpt-4o-mini (OpenAI), qwen/qwen-2.5-72b-instruct (OpenRouter) |
-| Deployment | Vercel — `PROVIDER=mock`, no API keys in environment |
+| Deployment | Vercel — `PROVIDER=api`, Qwen 7B via OpenRouter, `ENABLE_PROVIDER_FALLBACK=true` |
 | Planned inference | AMD Developer Cloud + vLLM + Qwen on MI300X |
 
 ---
@@ -181,29 +180,50 @@ Open http://localhost:3000.
 
 ## Environment Variables
 
-Mock mode (default — no keys required):
+**Public Vercel demo** (Qwen 7B via OpenRouter, with fallback):
+
+```bash
+PROVIDER=api
+API_BASE_URL=https://openrouter.ai/api/v1
+API_MODEL=qwen/qwen-2.5-7b-instruct
+API_KEY=your_openrouter_key_here
+API_TIMEOUT_MS=8000
+ENABLE_PROVIDER_FALLBACK=true
+DEBUG_AGENT_OUTPUT=false
+```
+
+`API_TIMEOUT_MS=8000` keeps each provider call under 8 seconds so the fallback
+fires before Vercel Hobby's function limit. `ENABLE_PROVIDER_FALLBACK=true` means
+the demo returns a mock report (clearly labelled `"API mode → Mock fallback"`) if
+OpenRouter fails or times out — never a crash.
+
+**Mock mode** (local development — no API key required):
 
 ```bash
 PROVIDER=mock
 ```
 
-Controlled API demo with Qwen via OpenRouter:
+**Controlled local validation** (larger model, no Vercel limit pressure):
 
 ```bash
 PROVIDER=api
 API_BASE_URL=https://openrouter.ai/api/v1
 API_MODEL=qwen/qwen-2.5-72b-instruct
 API_KEY=your_key_here
+API_TIMEOUT_MS=90000
+ENABLE_PROVIDER_FALLBACK=false
 ```
 
-See `.env.example` for all available variables. API keys are read server-side only and are never exposed to the browser.
+See `.env.example` for the full variable reference. `API_KEY` is read server-side
+only — never exposed to the browser. Never commit `.env.local`.
 
 ---
 
 ## Deployment
 
-- Public deployments must use `PROVIDER=mock` — no API key, no cost, stable output
-- Do not deploy with `PROVIDER=api` on a public endpoint without authentication and rate limiting
+- Public demo runs `PROVIDER=api` with Qwen 7B via OpenRouter and `ENABLE_PROVIDER_FALLBACK=true`
+- `PROVIDER=mock` is available as a zero-cost fallback for local use or if no API key is configured
+- Do not deploy `PROVIDER=api` without rate limiting — it is already built into the route
 - See [docs/deployment.md](docs/deployment.md) for the full deployment safety guide
 
 ---
@@ -223,8 +243,9 @@ See `.env.example` for all available variables. API keys are read server-side on
 
 ## Final Submission Notes
 
-- **Public demo** runs in `PROVIDER=mock` — safe, deterministic, no secrets
-- **Controlled API validation** confirmed with `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (OpenRouter)
+- **Public demo** runs `PROVIDER=api` with `qwen/qwen-2.5-7b-instruct` via OpenRouter; `ENABLE_PROVIDER_FALLBACK=true` provides transparent mock fallback on failure
+- **Qwen 72B validation** confirmed end-to-end (`qwen/qwen-2.5-72b-instruct`, score 95/100); too slow for Vercel, used as evidence only
+- **gpt-4o-mini validation** confirmed end-to-end (OpenAI controlled test)
 - **Qwen validation evidence** documented in `docs/qwen-validation.md`
 - **AMD mode** is planned and documented — not live, pending GPU credit allocation
 - **No secrets committed** — `.env.local` is gitignored, `.env.example` contains placeholders only

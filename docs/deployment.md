@@ -22,35 +22,39 @@ in the response is set to `"API mode → Mock fallback"` so the fallback is alwa
 PROVIDER=api
 API_KEY=<your_openrouter_key>
 API_BASE_URL=https://openrouter.ai/api/v1
-API_MODEL=qwen/qwen-2.5-7b-instruct   # see model guidance below
-API_TIMEOUT_MS=30000
+API_MODEL=qwen/qwen-2.5-7b-instruct
+API_TIMEOUT_MS=8000
 ENABLE_PROVIDER_FALLBACK=true
+DEBUG_AGENT_OUTPUT=false
 ```
 
 **Model guidance for Vercel**:
 `qwen/qwen-2.5-72b-instruct` was validated end-to-end (score 95/100) but took
-~325 seconds — too slow for any Vercel function tier. Use a faster model for the
-public deploy:
+~325 seconds — far too slow for any Vercel function tier. Use the 7B model for
+the public deploy:
 
-| Model | Approx latency (5-agent pipeline) | Suitable for Vercel |
+| Model | Role | Suitable for Vercel Hobby |
 |---|---|---|
-| `qwen/qwen-2.5-72b-instruct` | ~325s | No — exceeds function limits |
-| `qwen/qwen-2.5-7b-instruct` | ~30–60s (estimated) | Yes — fits within 60s maxDuration |
-| `gpt-4o-mini` | ~60–90s (validated) | Yes with higher maxDuration |
+| `qwen/qwen-2.5-72b-instruct` | Validation evidence | No — ~325s exceeds all limits |
+| `qwen/qwen-2.5-7b-instruct` | **Public Vercel demo** | Yes — with `API_TIMEOUT_MS=8000` |
+| `gpt-4o-mini` | Controlled local test | Locally only (60-90s per pipeline) |
 
 **Timeout and fallback**:
-The per-call timeout is set by `API_TIMEOUT_MS` (default: 30 000 ms). The pipeline
-makes up to 5 sequential calls. With `API_TIMEOUT_MS=30000` and
-`ENABLE_PROVIDER_FALLBACK=true`, the worst case is: first slow call aborts at 30s →
-fallback triggers → mock report delivered in ~35s total. This fits well within the
-60-second `maxDuration` configured in the route.
+`API_TIMEOUT_MS=8000` (8 seconds) is chosen for Vercel Hobby safety. Each provider
+call is aborted after 8 seconds. If the call fails, `ENABLE_PROVIDER_FALLBACK=true`
+causes the pipeline to return mock output in `~1s`, for a total response time of
+`~9s` — within Vercel Hobby's 10-second function window.
 
-The fallback can only trigger if the provider throws (timeout, 5xx, network error).
-It cannot rescue a function that Vercel kills at the platform level — which is why
-keeping `API_TIMEOUT_MS` below Vercel's function limit is essential.
+The fallback triggers only if the provider throws (timeout, 5xx, network error).
+Vercel killing the function at the platform level bypasses all JavaScript — which is
+why `API_TIMEOUT_MS` must be set lower than Vercel's limit, not equal to it.
 
-**Qwen validation evidence**: `qwen/qwen-2.5-72b-instruct` validated locally (not on
-Vercel) with full pipeline. See `docs/qwen-validation.md`.
+`providerMode` in the response is always honest:
+- `"API mode"` — real Qwen output returned
+- `"API mode → Mock fallback"` — provider failed, mock output returned
+
+**Qwen validation evidence**: `qwen/qwen-2.5-72b-instruct` was validated locally
+(not on Vercel) with the full 5-agent pipeline, score 95/100. See `docs/qwen-validation.md`.
 
 **Abuse protection**: The public `/api/analyze` route includes:
 - Per-IP in-memory rate limit: 3 analysis requests per 10 minutes (HTTP 429)
@@ -117,16 +121,17 @@ npx tsc --noEmit     # type check
 
 ## Platform env vars reference (Vercel)
 
-**Public Qwen demo (recommended):**
+**Public Qwen demo (Vercel Hobby safe):**
 ```
 PROVIDER=api
 API_KEY=<openrouter_key>
 API_BASE_URL=https://openrouter.ai/api/v1
 API_MODEL=qwen/qwen-2.5-7b-instruct
-API_TIMEOUT_MS=30000
+API_TIMEOUT_MS=8000
 ENABLE_PROVIDER_FALLBACK=true
+DEBUG_AGENT_OUTPUT=false
 ```
-Note: use a fast model (7B not 72B) to stay within Vercel function limits.
+`API_TIMEOUT_MS=8000` ensures fallback fires before Vercel Hobby's 10s function limit.
 
 **Safe mock fallback deploy:**
 ```

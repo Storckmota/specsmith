@@ -44,7 +44,7 @@ _(148 characters — within the 150–200 character guidance)_
 
 **Coverage gaps**: The gap report explicitly calls out what was not tested and why. This is as valuable as the passing tests.
 
-**Public demo**: The live demo at https://specsmith.vercel.app/ runs in `PROVIDER=api` mode with `qwen/qwen-2.5-72b-instruct` via OpenRouter. `ENABLE_PROVIDER_FALLBACK=true` is set: if the provider times out or fails, the pipeline returns mock output and clearly marks `providerMode` as `"API mode → Mock fallback"`. The demo never crashes and any fallback is always disclosed.
+**Public demo**: The live demo at https://specsmith.vercel.app/ runs in `PROVIDER=api` mode with `qwen/qwen-2.5-7b-instruct` via OpenRouter (`API_TIMEOUT_MS=8000`, `ENABLE_PROVIDER_FALLBACK=true`). If the provider times out or fails, the pipeline returns mock output and marks `providerMode` as `"API mode → Mock fallback"` — never silent, never a crash. The heavier `qwen/qwen-2.5-72b-instruct` model was used for validation evidence (full pipeline, score 95/100) but is too slow for public Vercel.
 
 **Controlled API mode**: The codebase supports `PROVIDER=api`, which calls any OpenAI-compatible endpoint. This mode was validated end-to-end with two models: `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (via OpenRouter). Both produced schema-valid output through all five pipeline stages, including the Test Writer's delimiter format and the Zod schema case normalization.
 
@@ -65,7 +65,7 @@ _(148 characters — within the 150–200 character guidance)_
 | AI provider abstraction | OpenAI-compatible chat completions interface |
 | Provider modes | `mock` (deterministic fixtures), `api` (any OpenAI-compatible endpoint), `amd` (planned) |
 | Test Writer format | Delimiter-based output (`===METADATA===` / `===CODE===` / `===END===`) to avoid JSON escaping failures |
-| Error handling | AbortController 90s timeout, non-2xx surfacing, one-retry Test Writer repair path |
+| Error handling | Configurable `API_TIMEOUT_MS` per-call timeout (default 30s, 8s for Vercel Hobby), non-2xx surfacing, one-retry Test Writer repair path |
 | Secrets | Server-side only; `API_KEY` never exposed to browser |
 | Public deploy | Vercel — `PROVIDER=api` / Qwen via OpenRouter, `ENABLE_PROVIDER_FALLBACK=true` |
 | Planned inference | AMD Developer Cloud + vLLM + Qwen/Qwen2.5-72B-Instruct on MI300X |

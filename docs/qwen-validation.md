@@ -17,6 +17,13 @@ One controlled validation run was executed using the User Auth OpenAPI 3.0.3 exa
 with the Playwright framework. All five agents returned schema-valid output and the pipeline
 returned HTTP 200.
 
+> **Model distinction**
+> This document covers the **validation run** using `qwen/qwen-2.5-72b-instruct`.
+> The **public Vercel demo** uses `qwen/qwen-2.5-7b-instruct` with `API_TIMEOUT_MS=8000`
+> and `ENABLE_PROVIDER_FALLBACK=true` — a lighter, faster model suited to Vercel Hobby
+> function limits. The 72B run (~325 seconds) confirms Qwen output quality; the 7B model
+> is the practical public deploy choice.
+
 ---
 
 ## Provider Configuration
