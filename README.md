@@ -4,7 +4,7 @@
 
 ## One-Line Pitch
 
-SpecSmith turns product specs and API docs into risk-ranked test plans and executable test drafts using a multi-agent QA pipeline running on AMD MI300X.
+SpecSmith turns product specs and API docs into risk-ranked test plans and executable test drafts using a multi-agent QA pipeline designed for AMD MI300X.
 
 ---
 
@@ -59,7 +59,7 @@ The QA Reviewer includes a real feedback loop: if any HIGH or CRITICAL risk lack
 - **TypeScript** + **Zod** for type safety and schema validation
 - **Tailwind CSS** for styling
 - **Provider abstraction**: mock / API / AMD mode
-- **AMD MI300X** for production inference (via vLLM + Qwen)
+- **AMD MI300X** target for production inference (via vLLM + Qwen) — planned, see `docs/amd-setup.md`
 
 ---
 
@@ -99,13 +99,15 @@ No API keys required in mock mode.
 | `PROVIDER` | `mock` \| `api` \| `amd` | AI provider mode |
 | `API_KEY` | `sk-...` | API key — **required** for `PROVIDER=api` |
 | `API_BASE_URL` | URL | OpenAI-compatible base URL (default: `https://api.openai.com/v1`) |
-| `API_MODEL` | e.g. `gpt-4o` | Model name for API mode (default: `gpt-4o`) |
+| `API_MODEL` | e.g. `gpt-4o-mini` | Model name for API mode (default: `gpt-4o`; use `gpt-4o-mini` for cost-effective testing) |
 | `AMD_ENDPOINT` | URL | vLLM endpoint for AMD mode |
 | `AMD_MODEL` | e.g. `Qwen/Qwen2.5-72B-Instruct` | Model name for AMD mode |
 
 Default: `PROVIDER=mock`. App works fully without any API keys.
 
 > **Security**: Never commit `.env.local`. API keys are only read server-side and are never exposed to the browser.
+
+> **Public deploy**: Use `PROVIDER=mock` for any public or uncontrolled deployment — it requires no API key and produces stable output. `PROVIDER=api` is for controlled local testing or a supervised demo only. See `docs/deployment.md`.
 
 ---
 
