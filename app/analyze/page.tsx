@@ -29,10 +29,20 @@ export default function AnalyzePage() {
 
   if (!result) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-6 h-6 rounded-full border-2 border-zinc-700 border-t-violet-500 animate-spin" />
-          <p className="text-zinc-500 text-sm">Loading analysis…</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-emerald-950/20">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-400/30 bg-slate-950/70">
+              <img src="/brand/specsmith-logo.png" alt="SpecSmith logo" className="h-9 w-9 object-contain" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-100">The Smith is examining the blueprint...</p>
+              <p className="mt-1 text-xs text-slate-500">Heating the forge. Striking the anvil.</p>
+            </div>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+            <div className="h-full w-2/3 animate-pulse rounded-full bg-emerald-500" />
+          </div>
         </div>
       </div>
     );
@@ -55,101 +65,87 @@ export default function AnalyzePage() {
     github_issue: "GitHub Issue",
   };
 
-  const scoreColor =
-    result.coverage.score >= 80
-      ? "text-emerald-400"
-      : result.coverage.score >= 60
-      ? "text-yellow-400"
-      : "text-red-400";
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* Nav */}
-      <nav className="border-b border-zinc-800/80 px-6 py-4 sticky top-0 bg-zinc-950/95 backdrop-blur z-20">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <button
-            onClick={() => router.push("/")}
-            className="flex items-center gap-2 group"
-          >
-            <span className="text-lg font-bold text-zinc-100 tracking-tight">SpecSmith</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-violet-900/60 border border-violet-700/50 text-violet-300 font-medium">BETA</span>
+    <div className="min-h-screen overflow-hidden bg-slate-950 text-slate-100">
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-x-0 top-0 h-96 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.16),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.035)_1px,transparent_1px)] bg-[size:42px_42px]" />
+      </div>
+
+      <nav className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/85 px-6 py-4 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <button onClick={() => router.push("/")} className="flex items-center gap-3 text-left">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/30 bg-slate-950/70">
+              <img src="/brand/specsmith-logo.png" alt="SpecSmith logo" className="h-8 w-8 object-contain" />
+            </span>
+            <div>
+              <div className="text-sm font-semibold tracking-tight text-white">SpecSmith</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400">Forge Report</div>
+            </div>
           </button>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-zinc-600 hidden sm:block">
-              {result.riskRegistry.length} risks · {result.testMatrix.length} tests · score {result.coverage.score}/100
+            <span className="hidden rounded-full border border-emerald-400/30 px-3 py-1 text-xs font-medium text-emerald-300 sm:inline-flex">
+              Forge Process Complete
             </span>
             <button
               onClick={() => router.push("/")}
-              className="text-xs px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-700"
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:-translate-y-0.5 hover:border-emerald-400/40 hover:text-slate-100"
             >
-              ← New Analysis
+              New Analysis
             </button>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-5">
+      <main className="mx-auto max-w-7xl space-y-5 px-6 py-8">
+        <section className="grid gap-5 lg:grid-cols-[1.4fr_0.9fr]">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-6 backdrop-blur-md">
+            <div className="mb-5 flex flex-wrap gap-2">
+              <span className="rounded-full border border-white/10 bg-slate-900/80 px-2.5 py-1 text-xs font-medium text-slate-400">
+                {inputTypeLabel[result.summary.inputType] ?? result.summary.inputType}
+              </span>
+              <span className="rounded-full border border-white/10 bg-slate-900/80 px-2.5 py-1 text-xs font-medium text-slate-400">
+                {frameworkLabel[result.testFile?.framework ?? ""] ?? result.testFile?.framework}
+              </span>
+              <span className="rounded-full border border-white/10 bg-slate-900/80 px-2.5 py-1 font-mono text-xs text-slate-500">
+                {result.providerMode}
+              </span>
+              {result.coverage.plannerRevised && (
+                <span className="rounded-full border border-amber-400/40 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300">
+                  QA revision triggered
+                </span>
+              )}
+            </div>
+            <h1 className="text-3xl font-semibold tracking-tight text-white">{result.summary.title}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">{result.summary.detectedScope}</p>
 
-        {/* Summary Card */}
-        <div className="bg-zinc-900 border border-zinc-700/70 rounded-2xl overflow-hidden">
-          {/* Title row */}
-          <div className="px-6 pt-5 pb-4 border-b border-zinc-800">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h1 className="text-xl font-bold text-zinc-100 leading-tight">{result.summary.title}</h1>
-                <p className="text-sm text-zinc-400 mt-1 leading-relaxed">{result.summary.detectedScope}</p>
-              </div>
-              <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 font-medium">
-                  {inputTypeLabel[result.summary.inputType] ?? result.summary.inputType}
-                </span>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 font-medium">
-                  {frameworkLabel[result.testFile?.framework ?? ""] ?? result.testFile?.framework}
-                </span>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-500 border border-zinc-700 font-mono">
-                  {result.providerMode}
-                </span>
-                {result.coverage.plannerRevised && (
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-amber-950/60 border border-amber-800/60 text-amber-300 font-medium">
-                    QA revision triggered
-                  </span>
-                )}
-              </div>
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
+              <StatCell label="Critical" value={criticalCount} valueClass="text-rose-300" />
+              <StatCell label="High" value={highCount} valueClass="text-amber-300" />
+              <StatCell label="Medium" value={mediumCount} valueClass="text-yellow-300" />
+              <StatCell label="Risks" value={result.riskRegistry.length} valueClass="text-slate-200" />
+              <StatCell label="Tests" value={result.testMatrix.length} valueClass="text-emerald-300" />
             </div>
           </div>
 
-          {/* Stats grid */}
-          <div className="grid grid-cols-3 sm:grid-cols-6 divide-x divide-zinc-800">
-            <StatCell label="CRITICAL" value={criticalCount} valueClass="text-red-400" />
-            <StatCell label="HIGH" value={highCount} valueClass="text-orange-400" />
-            <StatCell label="MEDIUM" value={mediumCount} valueClass="text-yellow-400" />
-            <StatCell label="TOTAL RISKS" value={result.riskRegistry.length} valueClass="text-zinc-300" />
-            <StatCell label="TESTS" value={result.testMatrix.length} valueClass="text-violet-400" />
-            <StatCell label="SCORE" value={`${result.coverage.score}/100`} valueClass={scoreColor} />
-          </div>
-        </div>
+          <CoverageScore coverage={result.coverage} />
+        </section>
 
-        {/* Agent Pipeline */}
         <AgentProgress timeline={result.agentTimeline} providerMode={result.providerMode} />
 
-        {/* Coverage Score */}
-        <CoverageScore coverage={result.coverage} />
+        <section className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]">
+          <div className="space-y-5">
+            <GapReport coverage={result.coverage} />
+            <RiskRegistry risks={result.riskRegistry} />
+          </div>
+          <div className="space-y-5">
+            <TestMatrix tests={result.testMatrix} />
+            <TestFileOutput testFile={result.testFile} />
+          </div>
+        </section>
 
-        {/* Risk Registry */}
-        <RiskRegistry risks={result.riskRegistry} />
-
-        {/* Test Matrix */}
-        <TestMatrix tests={result.testMatrix} />
-
-        {/* Test File */}
-        <TestFileOutput testFile={result.testFile} />
-
-        {/* Gap Report */}
-        <GapReport coverage={result.coverage} />
-
-        {/* Footer */}
-        <div className="text-center text-xs text-zinc-700 pb-6">
-          SpecSmith · AMD Developer Hackathon · PopLabs
+        <div className="pb-6 text-center text-xs text-slate-700">
+          SpecSmith QA Forge - AMD Developer Hackathon - PopLabs
         </div>
       </main>
     </div>
@@ -166,9 +162,9 @@ function StatCell({
   valueClass: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-4 px-3 text-center">
-      <div className={`text-2xl font-bold tabular-nums ${valueClass}`}>{value}</div>
-      <div className="text-xs text-zinc-600 font-medium tracking-wide mt-0.5">{label}</div>
+    <div className="rounded-xl border border-white/10 bg-slate-950/55 px-4 py-3">
+      <div className={`text-2xl font-semibold tabular-nums ${valueClass}`}>{value}</div>
+      <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-slate-600">{label}</div>
     </div>
   );
 }

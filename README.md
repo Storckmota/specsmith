@@ -8,6 +8,12 @@ SpecSmith turns product specs and API docs into risk-ranked test plans and execu
 
 ---
 
+## Brand Asset
+
+The approved SpecSmith logo/mascot image is `public/brand/specsmith-logo.png`. Use this asset for all product logo and mascot placements.
+
+---
+
 ## Problem
 
 Developers and small teams accumulate test debt because writing test plans from specs is slow, tedious, and incomplete. Spec-to-test gaps cause production incidents that could have been caught before deployment.

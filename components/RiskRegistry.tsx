@@ -8,24 +8,20 @@ interface Props {
 
 const severityConfig = {
   CRITICAL: {
-    className: "bg-red-950/60 text-red-300 border-red-800/60",
-    barClass: "bg-red-500",
-    dotClass: "bg-red-400",
+    className: "text-rose-200 border-rose-400/60 shadow-[0_0_14px_rgba(244,63,94,0.18)]",
+    dotClass: "bg-rose-400 shadow-[0_0_14px_rgba(244,63,94,0.75)]",
   },
   HIGH: {
-    className: "bg-orange-950/60 text-orange-300 border-orange-800/60",
-    barClass: "bg-orange-500",
-    dotClass: "bg-orange-400",
+    className: "text-amber-200 border-amber-400/60 shadow-[0_0_14px_rgba(245,158,11,0.16)]",
+    dotClass: "bg-amber-400 shadow-[0_0_14px_rgba(245,158,11,0.7)]",
   },
   MEDIUM: {
-    className: "bg-yellow-950/60 text-yellow-300 border-yellow-800/60",
-    barClass: "bg-yellow-500",
+    className: "text-yellow-200 border-yellow-400/45",
     dotClass: "bg-yellow-400",
   },
   LOW: {
-    className: "bg-zinc-800/80 text-zinc-400 border-zinc-700",
-    barClass: "bg-zinc-600",
-    dotClass: "bg-zinc-500",
+    className: "text-slate-400 border-slate-600",
+    dotClass: "bg-slate-500",
   },
 };
 
@@ -43,64 +39,64 @@ export default function RiskRegistry({ risks }: Props) {
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] backdrop-blur-md">
+      <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-200">Risk Registry</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">{risks.length} risks identified and ranked by severity</p>
+          <h2 className="text-sm font-semibold text-slate-100">Risk Registry</h2>
+          <p className="mt-0.5 text-xs text-slate-500">{risks.length} risks identified and ranked by severity</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-2 sm:flex">
           {counts.CRITICAL > 0 && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-red-950/60 border border-red-800/50 text-red-300 font-medium">
+            <span className="rounded-full border border-rose-400/50 px-2 py-0.5 text-xs font-medium text-rose-200">
               {counts.CRITICAL} critical
             </span>
           )}
           {counts.HIGH > 0 && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-orange-950/60 border border-orange-800/50 text-orange-300 font-medium">
+            <span className="rounded-full border border-amber-400/50 px-2 py-0.5 text-xs font-medium text-amber-200">
               {counts.HIGH} high
             </span>
           )}
         </div>
       </div>
 
-      <div className="px-6 py-5 space-y-3">
+      <div className="space-y-3 px-6 py-5">
         {sorted.map((risk) => {
           const cfg = severityConfig[risk.severity];
           return (
             <div
               key={risk.id}
-              className="border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors"
+              className="rounded-xl border border-white/10 bg-slate-950/50 p-4 transition hover:border-emerald-400/25"
             >
-              <div className="flex items-start gap-3 mb-2.5">
-                <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${cfg.dotClass}`} />
+              <div className="mb-2.5 flex items-start gap-3">
+                <span className={`mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full ${cfg.dotClass}`} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-xs font-mono text-zinc-600">{risk.id}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${cfg.className}`}>
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-xs text-slate-600">{risk.id}</span>
+                    <span className={`rounded-full border bg-transparent px-2 py-0.5 text-xs font-semibold ${cfg.className}`}>
                       {risk.severity}
                     </span>
-                    <span className="text-sm font-semibold text-zinc-200">{risk.title}</span>
+                    <span className="text-sm font-semibold text-slate-100">{risk.title}</span>
                   </div>
-                  <p className="text-sm text-zinc-400 leading-relaxed">{risk.description}</p>
+                  <p className="text-sm leading-relaxed text-slate-400">{risk.description}</p>
                 </div>
               </div>
 
               <div className="ml-4 flex flex-wrap gap-x-6 gap-y-1 text-xs">
-                <span className="text-zinc-600">
-                  <span className="text-zinc-500">Source: </span>{risk.sourceRef}
+                <span className="text-slate-600">
+                  <span className="text-slate-500">Source: </span>{risk.sourceRef}
                 </span>
                 {risk.linkedTestIds.length > 0 ? (
-                  <span className="text-zinc-600">
-                    <span className="text-zinc-500">Tests: </span>
+                  <span className="text-slate-600">
+                    <span className="text-slate-500">Tests: </span>
                     {risk.linkedTestIds.join(", ")}
                   </span>
                 ) : (
-                  <span className="text-amber-500/80 font-medium">No linked tests</span>
+                  <span className="font-medium text-amber-300">No linked tests</span>
                 )}
               </div>
 
               {risk.whyItMatters && (
-                <p className="ml-4 text-xs text-zinc-600 mt-2 italic leading-relaxed">{risk.whyItMatters}</p>
+                <p className="ml-4 mt-2 text-xs italic leading-relaxed text-slate-600">{risk.whyItMatters}</p>
               )}
             </div>
           );

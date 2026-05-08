@@ -54,22 +54,22 @@ export default function TestMatrix({ tests }: Props) {
   const filtered = filter === "all" ? tests : tests.filter((t) => t.category === filter);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] backdrop-blur-md">
+      <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-200">Test Matrix</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">{tests.length} test cases across {categories.length} categories</p>
+          <h2 className="text-sm font-semibold text-slate-100">Test Matrix</h2>
+          <p className="mt-0.5 text-xs text-slate-500">{tests.length} test cases across {categories.length} categories</p>
         </div>
       </div>
 
       {/* Category filters */}
-      <div className="flex flex-wrap gap-2 px-6 py-3.5 border-b border-zinc-800/60">
+      <div className="flex flex-wrap gap-2 border-b border-white/10 px-6 py-3.5">
         <button
           onClick={() => setFilter("all")}
           className={`text-xs px-3 py-1 rounded-full border transition-colors font-medium ${
             filter === "all"
-              ? "bg-zinc-700 border-zinc-600 text-zinc-200"
-              : "bg-zinc-800/60 border-zinc-700/60 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600"
+              ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-200"
+              : "border-white/10 bg-slate-950/50 text-slate-500 hover:border-emerald-400/30 hover:text-slate-300"
           }`}
         >
           All ({tests.length})
@@ -82,7 +82,7 @@ export default function TestMatrix({ tests }: Props) {
               key={cat}
               onClick={() => setFilter(cat)}
               className={`text-xs px-3 py-1 rounded-full border transition-colors font-medium ${
-                filter === cat ? cfg.className : "bg-zinc-800/60 border-zinc-700/60 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600"
+                filter === cat ? cfg.className : "border-white/10 bg-slate-950/50 text-slate-500 hover:border-emerald-400/30 hover:text-slate-300"
               }`}
             >
               {cfg.label} ({count})
@@ -92,7 +92,7 @@ export default function TestMatrix({ tests }: Props) {
       </div>
 
       {/* Test list */}
-      <div className="px-6 py-4 space-y-2">
+      <div className="space-y-2 px-6 py-4">
         {filtered.map((test) => {
           const catCfg = categoryConfig[test.category];
           const priCfg = priorityConfig[test.priority];
@@ -100,22 +100,22 @@ export default function TestMatrix({ tests }: Props) {
           return (
             <div
               key={test.id}
-              className="border border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors"
+              className="overflow-hidden rounded-xl border border-white/10 bg-slate-950/50 transition hover:border-emerald-400/25"
             >
               <button
                 onClick={() => setExpanded(isExpanded ? null : test.id)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-zinc-800/30 transition-colors"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-white/[0.035]"
               >
-                <span className="text-xs font-mono text-zinc-600 flex-shrink-0 w-14 text-right">{test.id}</span>
+                <span className="w-14 flex-shrink-0 text-right font-mono text-xs text-slate-600">{test.id}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full border flex-shrink-0 ${catCfg.className}`}>
                   {catCfg.label}
                 </span>
-                <span className="text-sm text-zinc-200 flex-1 min-w-0 truncate">{test.title}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-slate-200">{test.title}</span>
                 <span className={`text-xs flex-shrink-0 ${priCfg.className}`}>
                   {test.priority}
                 </span>
                 <svg
-                  className={`w-3.5 h-3.5 text-zinc-600 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                  className={`h-3.5 w-3.5 flex-shrink-0 text-slate-600 transition-transform ${isExpanded ? "rotate-180" : ""}`}
                   viewBox="0 0 12 12"
                   fill="none"
                 >
@@ -124,7 +124,7 @@ export default function TestMatrix({ tests }: Props) {
               </button>
 
               {isExpanded && (
-                <div className="px-4 pb-4 border-t border-zinc-800">
+                <div className="border-t border-white/10 px-4 pb-4">
                   <div className="space-y-2.5 pt-3">
                     {[
                       { label: "Given", value: test.given },
@@ -132,16 +132,16 @@ export default function TestMatrix({ tests }: Props) {
                       { label: "Then", value: test.then },
                     ].map(({ label, value }) => (
                       <div key={label} className="flex gap-3">
-                        <span className="text-xs font-semibold text-zinc-500 w-10 flex-shrink-0 mt-0.5">{label}</span>
-                        <span className="text-sm text-zinc-300 leading-relaxed">{value}</span>
+                        <span className="mt-0.5 w-10 flex-shrink-0 text-xs font-semibold text-slate-500">{label}</span>
+                        <span className="text-sm leading-relaxed text-slate-300">{value}</span>
                       </div>
                     ))}
                   </div>
                   {test.linkedRiskIds.length > 0 && (
-                    <div className="flex gap-2 flex-wrap mt-3 pt-3 border-t border-zinc-800/60">
-                      <span className="text-xs text-zinc-600">Linked risks:</span>
+                    <div className="mt-3 flex flex-wrap gap-2 border-t border-white/10 pt-3">
+                      <span className="text-xs text-slate-600">Linked risks:</span>
                       {test.linkedRiskIds.map((id) => (
-                        <span key={id} className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 font-mono border border-zinc-700">
+                        <span key={id} className="rounded border border-white/10 bg-slate-900 px-2 py-0.5 font-mono text-xs text-slate-500">
                           {id}
                         </span>
                       ))}

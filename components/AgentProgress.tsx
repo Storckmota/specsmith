@@ -11,47 +11,28 @@ interface Props {
 
 const statusConfig = {
   pending: {
-    icon: (
-      <span className="w-2 h-2 rounded-full bg-zinc-700 inline-block" />
-    ),
-    rowClass: "bg-zinc-900 border-zinc-800",
-    labelClass: "text-zinc-600",
+    dot: "bg-slate-700",
+    ring: "border-slate-700",
     label: "pending",
+    text: "text-slate-600",
   },
   running: {
-    icon: (
-      <span className="w-2 h-2 rounded-full bg-violet-500 inline-block animate-pulse" />
-    ),
-    rowClass: "bg-violet-950/20 border-violet-800/40",
-    labelClass: "text-violet-400",
+    dot: "bg-emerald-400 animate-pulse",
+    ring: "border-emerald-400/60 shadow-[0_0_18px_rgba(52,211,153,0.35)]",
     label: "running",
+    text: "text-emerald-300",
   },
   complete: {
-    icon: (
-      <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-    rowClass: "bg-zinc-900 border-zinc-800",
-    labelClass: "text-emerald-400",
+    dot: "bg-emerald-400",
+    ring: "border-emerald-400/50",
     label: "complete",
+    text: "text-emerald-300",
   },
   revision: {
-    icon: (
-      <svg className="w-4 h-4 text-amber-400" viewBox="0 0 16 16" fill="none">
-        <path
-          d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.4.87 4.4 2.2M13.5 2.5v2.5H11"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-    rowClass: "bg-amber-950/20 border-amber-800/40",
-    labelClass: "text-amber-400",
+    dot: "bg-amber-400 animate-pulse",
+    ring: "border-amber-400/60 shadow-[0_0_18px_rgba(245,158,11,0.35)]",
     label: "revision",
+    text: "text-amber-300",
   },
 };
 
@@ -64,60 +45,53 @@ const agentNumber: Record<string, number> = {
 };
 
 export default function AgentProgress({ timeline, providerMode }: Props) {
+  const hasRevision = timeline.some((entry) => entry.status === "revision");
+
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-6 py-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-200">Agent Pipeline</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">Real-time execution trace</p>
+          <h2 className="text-sm font-semibold text-slate-100">Agent Timeline</h2>
+          <p className="mt-0.5 text-xs text-slate-500">Parser to reviewer, with visible re-forge loop when coverage fails.</p>
         </div>
-        <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 font-mono">
+        <span className="rounded-full border border-white/10 bg-slate-950/70 px-2.5 py-1 font-mono text-xs text-slate-500">
           {providerMode}
         </span>
       </div>
 
-      <div className="divide-y divide-zinc-800/60">
-        {timeline.map((entry, i) => {
-          const cfg = statusConfig[entry.status];
-          const num = agentNumber[entry.agent];
-          return (
-            <div
-              key={i}
-              className={`flex items-start gap-4 px-6 py-3.5 transition-colors ${cfg.rowClass}`}
-            >
-              {/* Step number */}
-              <div className="flex flex-col items-center gap-1 pt-0.5 flex-shrink-0">
-                <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-mono text-zinc-500">
-                  {num ?? i + 1}
-                </div>
-              </div>
+      <div className="relative p-5">
+        <div className="absolute left-8 right-8 top-12 hidden h-px bg-gradient-to-r from-emerald-400/10 via-emerald-400/45 to-emerald-400/10 md:block" />
+        {hasRevision && (
+          <div className="absolute right-[10%] top-[78px] hidden rounded-full border border-amber-400/40 px-3 py-1 text-[11px] font-medium text-amber-300 shadow-[0_0_18px_rgba(245,158,11,0.12)] md:block">
+            Reviewer to Planner re-forge
+          </div>
+        )}
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="text-sm font-semibold text-zinc-200">{entry.agent}</span>
-                  <span
-                    className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full border ${
-                      entry.status === "complete"
-                        ? "bg-emerald-950/40 border-emerald-800/40 text-emerald-400"
-                        : entry.status === "revision"
-                        ? "bg-amber-950/40 border-amber-800/40 text-amber-400"
-                        : entry.status === "running"
-                        ? "bg-violet-950/40 border-violet-800/40 text-violet-400"
-                        : "bg-zinc-800 border-zinc-700 text-zinc-500"
-                    }`}
-                  >
-                    {cfg.icon}
-                    {cfg.label}
-                  </span>
+        <div className="grid gap-3 md:grid-cols-5">
+          {timeline.map((entry, i) => {
+            const cfg = statusConfig[entry.status];
+            const num = agentNumber[entry.agent] ?? i + 1;
+            return (
+              <div key={`${entry.agent}-${i}`} className="relative rounded-xl border border-white/10 bg-slate-950/55 p-4">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-full border bg-slate-950 ${cfg.ring}`}>
+                    <span className={`h-2.5 w-2.5 rounded-full ${cfg.dot}`} />
+                  </div>
+                  <span className="font-mono text-xs text-slate-700">0{num}</span>
                 </div>
-                {entry.message && (
-                  <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{entry.message}</p>
-                )}
+                <div className="text-sm font-semibold text-slate-100">{entry.agent}</div>
+                <div className={`mt-1 text-xs font-medium ${cfg.text}`}>{cfg.label}</div>
+                {entry.message && <p className="mt-3 text-xs leading-5 text-slate-500">{entry.message}</p>}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        {hasRevision && (
+          <div className="mt-4 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-xs leading-6 text-amber-200">
+            Revision triggered: the QA Reviewer found uncovered high-severity risk and sent the plan back through Test Planner and Test Writer for one targeted pass.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -6,7 +6,14 @@
 - **Track**: AI Agents & Agentic Workflows
 - **Team Name**: SpecSmith PopLabs
 - **Project Name**: SpecSmith
+- **Approved Brand Image**: `public/brand/specsmith-logo.png`
 - **Submission Deadline**: TBD — check lablab.ai event page
+
+---
+
+## Brand Asset Lock
+
+The official approved SpecSmith logo/mascot image is `public/brand/specsmith-logo.png`. Do not use generated, placeholder, or alternate mascot imagery in the product UI.
 
 ---
 
