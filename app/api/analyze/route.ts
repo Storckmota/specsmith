@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       if (
         process.env.PROVIDER === "api" &&
-        process.env.ENABLE_PROVIDER_FALLBACK === "true"
+        process.env.ENABLE_PROVIDER_FALLBACK !== "false"
       ) {
         const msg = error instanceof Error ? error.message : String(error);
         console.error("[specsmith] Provider failed — falling back to mock:", msg);
