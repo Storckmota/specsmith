@@ -32,7 +32,7 @@ SpecSmith is not a test generator. It is an agentic QA workflow — five agents 
 
 **Live demo**: https://specsmith.vercel.app/ — no account required.
 
-The public demo runs in `PROVIDER=mock` mode: deterministic, no API keys, no external calls. It demonstrates the complete UX and 5-agent pipeline without any auth wall or cost. Controlled API validation (real model output) has been confirmed locally with `gpt-4o-mini` and `qwen/qwen-2.5-72b-instruct`.
+The public demo runs in `PROVIDER=api` mode with Qwen via OpenRouter. For reliability, `ENABLE_PROVIDER_FALLBACK=true` is set: if the provider times out or fails, the pipeline returns mock output and marks `providerMode` as `"API mode → Mock fallback"` — the demo never crashes and the fallback is always disclosed. Controlled API validation has been confirmed with both `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (OpenRouter).
 
 **Demo flow:**
 
@@ -83,9 +83,11 @@ Forge Report
 
 | Mode | Status | Notes |
 |---|---|---|
-| `mock` | ✅ Public demo | Safe Vercel deployment, no API keys |
+| Mode | Status | Notes |
+|---|---|---|
+| `mock` | ✅ Available | Safe fallback — no API key, deterministic fixture output |
 | `api` / gpt-4o-mini | ✅ Validated | Controlled local/provider test |
-| `api` / Qwen 2.5 72B | ✅ Validated | OpenRouter OpenAI-compatible path |
+| `api` / Qwen 2.5 72B | ✅ Public demo | OpenRouter — `ENABLE_PROVIDER_FALLBACK=true` for reliability |
 | `amd` / vLLM / Qwen | 🟡 Planned | Pending AMD Developer Cloud credits |
 
 The `amd` provider path is present and documented, but not live. No AMD Developer Cloud runtime has been configured — AMD mode is pending GPU credit allocation.
@@ -154,7 +156,7 @@ Forge Report
 | Mode | How it works |
 |---|---|
 | `PROVIDER=mock` | Returns deterministic fixture data through all five agents. No API key required. |
-| `PROVIDER=api` | Calls any OpenAI-compatible `/chat/completions` endpoint. Requires `API_KEY`. |
+| `PROVIDER=api` | Calls any OpenAI-compatible `/chat/completions` endpoint. Requires `API_KEY`. Set `ENABLE_PROVIDER_FALLBACK=true` for public demo reliability. |
 | `PROVIDER=amd` | Designed to call a configured vLLM endpoint running Qwen on AMD Developer Cloud. Same interface as API mode. |
 
 ---

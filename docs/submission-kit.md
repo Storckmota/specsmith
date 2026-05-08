@@ -44,9 +44,9 @@ _(148 characters — within the 150–200 character guidance)_
 
 **Coverage gaps**: The gap report explicitly calls out what was not tested and why. This is as valuable as the passing tests.
 
-**Public demo**: The live demo at https://specsmith.vercel.app/ runs in `PROVIDER=mock` mode — fully deterministic, no API keys, no cost, no external calls. It demonstrates the complete UX and agent pipeline structure without any auth wall.
+**Public demo**: The live demo at https://specsmith.vercel.app/ runs in `PROVIDER=api` mode with `qwen/qwen-2.5-72b-instruct` via OpenRouter. `ENABLE_PROVIDER_FALLBACK=true` is set: if the provider times out or fails, the pipeline returns mock output and clearly marks `providerMode` as `"API mode → Mock fallback"`. The demo never crashes and any fallback is always disclosed.
 
-**Controlled API mode**: The codebase supports `PROVIDER=api`, which calls any OpenAI-compatible endpoint. This mode was validated end-to-end with two models: `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (via OpenRouter). Both produced schema-valid output through all five pipeline stages, including the Test Writer's delimiter format and the Zod schema case normalization. The public demo runs in `PROVIDER=mock` mode — deterministic, no API keys, no external calls.
+**Controlled API mode**: The codebase supports `PROVIDER=api`, which calls any OpenAI-compatible endpoint. This mode was validated end-to-end with two models: `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (via OpenRouter). Both produced schema-valid output through all five pipeline stages, including the Test Writer's delimiter format and the Zod schema case normalization.
 
 **Qwen validation**: `qwen/qwen-2.5-72b-instruct` was validated through OpenRouter using the `PROVIDER=api` path. HTTP 200, all 5 agents passed, QA Reviewer score 95/100, no false AMD claim. See `docs/qwen-validation.md` for the full evidence record.
 
@@ -67,7 +67,7 @@ _(148 characters — within the 150–200 character guidance)_
 | Test Writer format | Delimiter-based output (`===METADATA===` / `===CODE===` / `===END===`) to avoid JSON escaping failures |
 | Error handling | AbortController 90s timeout, non-2xx surfacing, one-retry Test Writer repair path |
 | Secrets | Server-side only; `API_KEY` never exposed to browser |
-| Public deploy | Vercel — `PROVIDER=mock`, no API keys in environment |
+| Public deploy | Vercel — `PROVIDER=api` / Qwen via OpenRouter, `ENABLE_PROVIDER_FALLBACK=true` |
 | Planned inference | AMD Developer Cloud + vLLM + Qwen/Qwen2.5-72B-Instruct on MI300X |
 
 ---
@@ -168,7 +168,7 @@ And the QA Reviewer is deterministic code, not another LLM call. It checks cover
 
 "Under the hood: Next.js 16, TypeScript, Zod v4 for strict schema validation across every agent output, and a provider abstraction that supports mock, API, and AMD mode.
 
-The public demo runs in mock mode — deterministic, no API keys, no cost. The codebase was validated end-to-end with real models: gpt-4o-mini and Qwen 2.5 72B through the full 5-agent pipeline, including real OpenAPI specs."
+The public demo runs with Qwen 2.5 72B via OpenRouter. If the provider times out, the app falls back to mock output transparently — the demo never crashes. Both gpt-4o-mini and Qwen 2.5 72B were validated end-to-end through the full 5-agent pipeline."
 
 ---
 
@@ -195,7 +195,7 @@ Capture these screenshots before submission:
 - [ ] **Test matrix** — test cases table, category and priority columns, linkedRiskIds visible
 - [ ] **Generated test file** — real Playwright/Jest/Pytest code, "executable draft" label visible
 - [ ] **Coverage score and gap report** — numeric score, gaps listed, reviewer feedback section
-- [ ] **Provider mode badge** — "Mock mode" indicator in the report summary or agent timeline
+- [ ] **Provider mode badge** — provider mode indicator in the report summary or agent timeline (e.g. "API mode", "API mode → Mock fallback")
 - [ ] **Optional: API local proof** — terminal showing `PROVIDER=api` run, score visible in browser (gpt-4o-mini or Qwen)
 - [ ] **Optional: Qwen validation** — browser showing Forge Report driven by `qwen/qwen-2.5-72b-instruct` via OpenRouter
 - [ ] **Optional: AMD Developer Cloud credit request** — dashboard screenshot if GPU credits were approved before deadline
@@ -245,7 +245,8 @@ SpecSmith is designed for AMD Developer Cloud and targets AMD MI300X inference. 
 ### Public demo
 - [ ] https://specsmith.vercel.app/ opens without auth wall (HTTP 200)
 - [ ] Homepage loads, example specs work, "Forge Test Plan" button visible
-- [ ] Forge Report page renders after analysis (mock mode)
+- [ ] Forge Report page renders after analysis (Qwen via OpenRouter, or fallback)
+- [ ] `providerMode` in report shows "API mode" or "API mode → Mock fallback" — never "AMD/Qwen mode"
 - [ ] No "running on AMD MI300X" or false AMD runtime claims visible on the site
 
 ### Repository

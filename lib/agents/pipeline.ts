@@ -1,4 +1,6 @@
 import { getProvider } from "../providers/index";
+import type { AiProvider } from "../providers/index";
+import { MockProvider } from "../providers/mock-provider";
 import { runSpecParser } from "./spec-parser";
 import { runRiskMapper } from "./risk-mapper";
 import { runTestPlanner, runTestPlannerRevision } from "./test-planner";
@@ -14,8 +16,12 @@ import { mockRevisedTests } from "../providers/mock-provider";
 
 type TimelineEntry = AnalysisResult["agentTimeline"][number];
 
-export async function runPipeline(request: AnalyzeRequest): Promise<AnalysisResult> {
-  const { provider, mode } = getProvider();
+// Internal implementation — accepts an explicit provider and display mode label.
+async function _runPipelineImpl(
+  request: AnalyzeRequest,
+  provider: AiProvider,
+  mode: string
+): Promise<AnalysisResult> {
   const isMock = mode === "Mock mode";
   const timeline: TimelineEntry[] = [];
 
@@ -106,6 +112,18 @@ export async function runPipeline(request: AnalyzeRequest): Promise<AnalysisResu
     providerMode: mode,
     agentTimeline: timeline,
   };
+}
+
+// Public API: resolves provider from environment variables.
+export async function runPipeline(request: AnalyzeRequest): Promise<AnalysisResult> {
+  const { provider, mode } = getProvider();
+  return _runPipelineImpl(request, provider, mode);
+}
+
+// Fallback: runs with MockProvider and marks providerMode honestly.
+// Used when PROVIDER=api fails and ENABLE_PROVIDER_FALLBACK=true.
+export async function runPipelineMockFallback(request: AnalyzeRequest): Promise<AnalysisResult> {
+  return _runPipelineImpl(request, new MockProvider(), "API mode → Mock fallback");
 }
 
 function linkTestsToRisks(risks: RiskItem[], tests: TestCase[]): RiskItem[] {
