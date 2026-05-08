@@ -1,82 +1,161 @@
 # SpecSmith
 
-> **SpecSmith finds what your team forgot to test.**
+SpecSmith is an agentic QA system that finds what your team forgot to test. Give it a product spec, PRD, GitHub issue, or OpenAPI document and it runs a structured 5-agent pipeline that returns a risk-ranked test plan, an executable test draft, a coverage score, and a gap report — with no manual QA planning required.
 
-## One-Line Pitch
-
-SpecSmith turns product specs and API docs into risk-ranked test plans and executable test drafts using a multi-agent QA pipeline designed for AMD MI300X.
-
----
-
-## Brand Assets
-
-- **Wordmark** (`public/brand/specsmith-wordmark.svg`) — SVG text-based wordmark used in the navbar and footer. This is the official navbar/logo asset.
-- **Mascot** (`public/brand/specsmith-logo.png`) — The Smith mascot image. Used in the homepage hero, The Smith section, and the analyze page loading state. Not used as the navbar logo.
-
-UI direction draws from three reference patterns:
-- Atmospheric dark background with layered ambient glows (ehabhussein.com)
-- Strong hero composition with split layout and proof structure (brandhousela.com)
-- Clean premium navigation, section architecture, and footer (trajectorywebdesign.com)
+| | |
+|---|---|
+| **Live Demo** | https://specsmith.vercel.app/ |
+| **GitHub** | https://github.com/Storckmota/specsmith |
+| **Submission Kit** | [docs/submission-kit.md](docs/submission-kit.md) |
+| **Qwen Validation** | [docs/qwen-validation.md](docs/qwen-validation.md) |
+| **Deployment Guide** | [docs/deployment.md](docs/deployment.md) |
 
 ---
 
-## Problem
+## Why SpecSmith
 
-Developers and small teams accumulate test debt because writing test plans from specs is slow, tedious, and incomplete. Spec-to-test gaps cause production incidents that could have been caught before deployment.
+Teams ship software from PRDs, GitHub issues, and OpenAPI documents — but test planning is a manual step that gets skipped, rushed, or siloed. High-risk flows get missed. Edge cases go untested. Abuse scenarios never make it into the plan. The result is bugs in production that were obvious in hindsight.
 
-Manual QA planning misses edge cases, ignores boundary conditions, and rarely accounts for abuse scenarios. The result: bugs in production that were obvious in hindsight.
+SpecSmith closes that gap by treating spec-to-test conversion as an agentic workflow:
 
----
+- **Risk-ranked findings** — every identified risk has a severity (LOW / MEDIUM / HIGH / CRITICAL) and a "why it matters" explanation
+- **Structured test matrix** — test cases across happy path, edge case, negative case, regression, API validation, and abuse case categories
+- **Executable test drafts** — real Playwright, Jest, or Pytest code with given/when/then structure, not pseudocode
+- **Coverage score** — 0–100 score with explicit gap identification
+- **Gap report** — named, actionable list of what is not covered and why
 
-## Solution
-
-SpecSmith reads a product spec, PRD, GitHub issue, or OpenAPI document and runs a 5-agent QA pipeline:
-
-1. **Spec Parser** — Extracts user stories, business rules, API endpoints, assumptions, and constraints
-2. **Risk Mapper** — Flags ambiguous requirements, missing validations, edge cases, fragile flows, and abuse cases
-3. **Test Planner** — Creates a structured test matrix across all test categories
-4. **Test Writer** — Generates executable test drafts in Playwright, Jest, or Pytest
-5. **QA Reviewer** — Reviews coverage, scores completeness, identifies gaps, and triggers revision if HIGH/CRITICAL risks are uncovered
-
-The QA Reviewer includes a real feedback loop: if any HIGH or CRITICAL risk lacks test coverage, the pipeline re-runs the Test Planner and Test Writer for that risk before finalizing the report.
+SpecSmith is not a test generator. It is an agentic QA workflow — five agents with defined roles, schema-validated handoffs, and a deterministic feedback loop.
 
 ---
 
-## Demo Flow
+## Demo
 
-**Live demo**: https://specsmith.vercel.app/ (no account required, mock mode)
+**Live demo**: https://specsmith.vercel.app/ — no account required.
 
-1. Open the homepage
-2. Paste or load an example spec (Todo API, Checkout Flow PRD, or User Auth OpenAPI)
-3. Select input type and test framework
-4. Click **Forge Test Plan**
-5. Watch the 5-agent pipeline execute with live progress
-6. Review: risk registry, test matrix, generated test file, coverage score, gap report
+The public demo runs in `PROVIDER=mock` mode: deterministic, no API keys, no external calls. It demonstrates the complete UX and 5-agent pipeline without any auth wall or cost. Controlled API validation (real model output) has been confirmed locally with `gpt-4o-mini` and `qwen/qwen-2.5-72b-instruct`.
+
+**Demo flow:**
+
+1. Open https://specsmith.vercel.app/
+2. Click **Todo API Spec** or **User Auth OpenAPI** to load an example
+3. Select input type and framework (Playwright / Jest / Pytest)
+4. Click **Forge Test Plan →**
+5. Review the Forge Report — risk registry, test matrix, generated test file, coverage score, gap report
+
+---
+
+## Agent Workflow
+
+```
+User Spec
+  ↓
+[1] Spec Parser     — normalizes any input into structured ParsedSpec
+  ↓
+[2] Risk Mapper     — ranks risks by severity with source refs
+  ↓
+[3] Test Planner    — builds test matrix, all 6 categories, HIGH/CRITICAL risks covered
+  ↓
+[4] Test Writer     — generates executable Playwright / Jest / Pytest code
+  ↓
+[5] QA Reviewer     — deterministic coverage check; triggers revision if gaps found
+  ↳ optional revision loop → back to Test Planner + Test Writer (max once)
+  ↓
+Forge Report
+```
+
+**Agent details:**
+
+1. **Spec Parser** — Accepts PRD, OpenAPI YAML/JSON, GitHub issue, or plain spec. Extracts user stories, business rules, API endpoints, assumptions, and constraints into a typed `ParsedSpec` structure.
+
+2. **Risk Mapper** — Reads the `ParsedSpec` and produces a `RiskItem[]` registry. Each risk has an ID (`R-001` format), severity, source reference, and a "why it matters" field.
+
+3. **Test Planner** — Builds `TestCase[]` covering all six test categories. Every HIGH and CRITICAL risk must have at least one linked test case ID. Each test case has a given/when/then structure.
+
+4. **Test Writer** — Generates a complete test file using a `===METADATA=== / ===CODE=== / ===END===` delimiter format so generated source code is never subject to JSON string escaping failures. Includes one automatic retry if the model does not follow the format.
+
+5. **QA Reviewer** — Deterministic code, not an LLM call. Checks every HIGH/CRITICAL risk for `linkedTestIds` coverage. If any are uncovered, sets `plannerRevised: true` and signals the pipeline to re-run the Test Planner and Test Writer for those specific risk IDs. Maximum one revision pass.
+
+**Duplicate request protection**: a SHA-256 fingerprint of each request deduplicates concurrent identical submissions, so accidental double-clicks or repeated API calls do not trigger multiple pipeline runs.
+
+---
+
+## Validation Status
+
+| Mode | Status | Notes |
+|---|---|---|
+| `mock` | ✅ Public demo | Safe Vercel deployment, no API keys |
+| `api` / gpt-4o-mini | ✅ Validated | Controlled local/provider test |
+| `api` / Qwen 2.5 72B | ✅ Validated | OpenRouter OpenAI-compatible path |
+| `amd` / vLLM / Qwen | 🟡 Planned | Pending AMD Developer Cloud credits |
+
+The `amd` provider mode is implemented and documented. No live AMD Developer Cloud runtime has been configured — AMD mode is pending GPU credit allocation.
+
+---
+
+## Qwen Validation
+
+SpecSmith was validated with `qwen/qwen-2.5-72b-instruct` through OpenRouter using the same `PROVIDER=api` OpenAI-compatible path — no code changes were required.
+
+**Result**: The full 5-agent workflow completed on the User Auth OpenAPI example. HTTP 200, all five agents returned schema-valid output, 28 Playwright test cases generated, QA Reviewer score **95/100**.
+
+Full evidence: [docs/qwen-validation.md](docs/qwen-validation.md)
+
+---
+
+## AMD Developer Cloud Path
+
+SpecSmith was designed so the provider layer can point to a vLLM endpoint running Qwen on AMD Developer Cloud / MI300X. The architecture is identical to `PROVIDER=api` — the only change is the endpoint and model name.
+
+- AMD Developer Cloud GPU credits have been requested and are pending
+- `docs/amd-setup.md` documents the intended integration path
+- The `AmdProvider` class and `AMD_ENDPOINT` / `AMD_MODEL` environment variables are implemented
+- The current public demo does not run on AMD Developer Cloud hardware
+- Qwen model readiness is confirmed by the OpenRouter validation above
 
 ---
 
 ## Tech Stack
 
-- **Next.js 16** with App Router
-- **TypeScript** + **Zod** for type safety and schema validation
-- **Tailwind CSS** for styling
-- **Provider abstraction**: mock / API / AMD mode
-- **AMD MI300X** target for production inference (via vLLM + Qwen) — planned, see `docs/amd-setup.md`
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 with App Router |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| Schema validation | Zod v4 — strict enum validation with case normalization preprocessing |
+| AI provider abstraction | OpenAI-compatible chat completions interface |
+| Provider modes | `mock` (fixtures), `api` (any OpenAI-compatible endpoint), `amd` (planned) |
+| Validated models | gpt-4o-mini (OpenAI), qwen/qwen-2.5-72b-instruct (OpenRouter) |
+| Deployment | Vercel — `PROVIDER=mock`, no API keys in environment |
+| Planned inference | AMD Developer Cloud + vLLM + Qwen on MI300X |
 
 ---
 
-## AMD / Qwen / ROCm Story
+## Architecture
 
-SpecSmith targets AMD MI300X GPUs via vLLM serving Qwen models through an OpenAI-compatible API.
+```
+User Spec
+  ↓
+Spec Parser
+  ↓
+Risk Mapper
+  ↓
+Test Planner
+  ↓
+Test Writer
+  ↓
+QA Reviewer
+  ↳ optional revision loop
+  ↓
+Forge Report
+```
 
-Why this matters for QA:
-- Long product specs and OpenAPI documents exceed the context windows of smaller models
-- Qwen's strong instruction-following and code generation capabilities are well-suited for structured test generation
-- AMD MI300X provides the memory bandwidth and VRAM capacity to serve large models efficiently for multi-agent inference
+**Provider modes:**
 
-**Qwen validation**: `qwen/qwen-2.5-72b-instruct` was validated through OpenRouter using `PROVIDER=api`. The full 5-agent pipeline returned HTTP 200, generated 28 Playwright test cases, and scored 95/100 on the QA Reviewer — without any code changes. See [`docs/qwen-validation.md`](docs/qwen-validation.md) for the complete evidence record.
-
-**AMD Developer Cloud status**: AMD mode is documented and ready to configure pending GPU credit allocation. See `docs/amd-setup.md`.
+| Mode | How it works |
+|---|---|
+| `PROVIDER=mock` | Returns deterministic fixture data through all five agents. No API key required. |
+| `PROVIDER=api` | Calls any OpenAI-compatible `/chat/completions` endpoint. Requires `API_KEY`. |
+| `PROVIDER=amd` | Calls a vLLM endpoint running Qwen on AMD Developer Cloud. Same interface as API mode. |
 
 ---
 
@@ -90,88 +169,64 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open http://localhost:3000.
 
-No API keys required in mock mode.
+- Default is `PROVIDER=mock` — works with no API keys
+- For API validation, edit `.env.local` with your provider settings
+- **Never commit `.env.local`** — it is already in `.gitignore`
 
 ---
 
 ## Environment Variables
 
-| Variable | Values | Description |
-|---|---|---|
-| `PROVIDER` | `mock` \| `api` \| `amd` | AI provider mode |
-| `API_KEY` | `sk-...` | API key — **required** for `PROVIDER=api` |
-| `API_BASE_URL` | URL | OpenAI-compatible base URL (default: `https://api.openai.com/v1`) |
-| `API_MODEL` | e.g. `gpt-4o-mini` | Model name for API mode (default: `gpt-4o`; use `gpt-4o-mini` for cost-effective testing) |
-| `AMD_ENDPOINT` | URL | vLLM endpoint for AMD mode |
-| `AMD_MODEL` | e.g. `Qwen/Qwen2.5-72B-Instruct` | Model name for AMD mode |
-
-Default: `PROVIDER=mock`. App works fully without any API keys.
-
-> **Security**: Never commit `.env.local`. API keys are only read server-side and are never exposed to the browser.
-
-> **Public deploy**: Use `PROVIDER=mock` for any public or uncontrolled deployment — it requires no API key and produces stable output. `PROVIDER=api` is for controlled local testing or a supervised demo only. See `docs/deployment.md`.
-
----
-
-## Testing Provider Modes
-
-### Mock mode (no keys required)
+Mock mode (default — no keys required):
 
 ```bash
-# .env.local
 PROVIDER=mock
 ```
 
-Works out of the box. Returns realistic fixture data through the full 5-agent pipeline. Best for local development and demos.
-
-### API mode (OpenAI-compatible endpoint)
+Controlled API demo with Qwen via OpenRouter:
 
 ```bash
-# .env.local
 PROVIDER=api
-API_KEY=sk-...
-API_BASE_URL=https://api.openai.com/v1   # or any compatible endpoint
-API_MODEL=gpt-4o
+API_BASE_URL=https://openrouter.ai/api/v1
+API_MODEL=qwen/qwen-2.5-72b-instruct
+API_KEY=your_key_here
 ```
 
-Any OpenAI-compatible provider works: OpenAI, Together AI, Fireworks, Groq, OpenRouter (Qwen), or a local vLLM instance.
-
-If `API_KEY` is missing when `PROVIDER=api`, the app fails immediately with a clear error message.
-
-### AMD mode (planned, not active yet)
-
-```bash
-# .env.local
-PROVIDER=amd
-AMD_ENDPOINT=http://<amd-cloud-ip>:8000
-AMD_MODEL=Qwen/Qwen2.5-72B-Instruct
-```
-
-AMD mode calls a vLLM server running Qwen on AMD MI300X. The interface is identical to API mode. Configuration is documented in `docs/amd-setup.md`. AMD mode is not yet active in this build.
+See `.env.example` for all available variables. API keys are read server-side only and are never exposed to the browser.
 
 ---
 
-## Project Status
+## Deployment
 
-- [x] Repository scaffold
-- [x] Mock pipeline (all 5 agents)
-- [x] QA Reviewer feedback loop
-- [x] Homepage UI
-- [x] Analyze page UI
-- [x] Zod schemas for output contract
-- [x] API mode (OpenAI-compatible, robust with timeout + error surfacing)
-- [x] Shared JSON extraction utility (handles markdown fences, leading prose)
-- [x] Improved agent prompts for real model compatibility
-- [x] Qwen validation — `qwen/qwen-2.5-72b-instruct` via OpenRouter, full pipeline, score 95/100
-- [ ] AMD/Qwen mode (interface ready, endpoint not configured — pending GPU credits)
-- [ ] AMD Developer Cloud proof
+- Public deployments must use `PROVIDER=mock` — no API key, no cost, stable output
+- Do not deploy with `PROVIDER=api` on a public endpoint without authentication and rate limiting
+- See [docs/deployment.md](docs/deployment.md) for the full deployment safety guide
 
 ---
 
-## Hackathon
+## Repository Docs
 
-**AMD Developer Hackathon** by lablab.ai
-**Track**: AI Agents & Agentic Workflows
-**Team**: SpecSmith PopLabs
+| Document | Purpose |
+|---|---|
+| [docs/submission-kit.md](docs/submission-kit.md) | Full hackathon submission kit — pitch, agent workflow, video script, screenshot checklist |
+| [docs/qwen-validation.md](docs/qwen-validation.md) | Qwen validation evidence — provider config, pipeline results, coverage score |
+| [docs/provider-readiness-audit.md](docs/provider-readiness-audit.md) | Provider mode readiness audit |
+| [docs/deployment.md](docs/deployment.md) | Safe deployment guide |
+| [docs/amd-setup.md](docs/amd-setup.md) | AMD Developer Cloud integration path |
+| [docs/design-strategy.md](docs/design-strategy.md) | UI and product design notes |
+
+---
+
+## Final Submission Notes
+
+- **Public demo** runs in `PROVIDER=mock` — safe, deterministic, no secrets
+- **Controlled API validation** confirmed with `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (OpenRouter)
+- **Qwen validation evidence** documented in `docs/qwen-validation.md`
+- **AMD mode** is planned and documented — not live, pending GPU credit allocation
+- **No secrets committed** — `.env.local` is gitignored, `.env.example` contains placeholders only
+
+---
+
+**AMD Developer Hackathon** by lablab.ai · Track: AI Agents & Agentic Workflows · Team: SpecSmith PopLabs
