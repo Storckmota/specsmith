@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130 26" role="img" aria-label="SpecSmith">
+  <!-- Emerald vertical accent bar -->
+  <rect x="0" y="5" width="2.5" height="16" rx="1.25" fill="#34d399"/>
+  <!-- Wordmark: Spec (light) + Smith (bold) -->
+  <text
+    x="9" y="20"
+    font-family="Arial, 'Helvetica Neue', Helvetica, sans-serif"
+    font-size="17"
+    letter-spacing="-0.3"
+  >
+    <tspan font-weight="400" fill="#94a3b8">Spec</tspan><tspan font-weight="700" fill="#f8fafc">Smith</tspan>
+  </text>
+</svg>

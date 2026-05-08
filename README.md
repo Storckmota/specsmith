@@ -8,9 +8,15 @@ SpecSmith turns product specs and API docs into risk-ranked test plans and execu
 
 ---
 
-## Brand Asset
+## Brand Assets
 
-The approved SpecSmith logo/mascot image is `public/brand/specsmith-logo.png`. Use this asset for all product logo and mascot placements.
+- **Wordmark** (`public/brand/specsmith-wordmark.svg`) — SVG text-based wordmark used in the navbar and footer. This is the official navbar/logo asset.
+- **Mascot** (`public/brand/specsmith-logo.png`) — The Smith mascot image. Used in the homepage hero, The Smith section, and the analyze page loading state. Not used as the navbar logo.
+
+UI direction draws from three reference patterns:
+- Atmospheric dark background with layered ambient glows (ehabhussein.com)
+- Strong hero composition with split layout and proof structure (brandhousela.com)
+- Clean premium navigation, section architecture, and footer (trajectorywebdesign.com)
 
 ---
 

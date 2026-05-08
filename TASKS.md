@@ -101,6 +101,22 @@
 - [ ] Review all example specs for demo quality
 - [ ] Run full demo flow end-to-end
 
+### UI Redesign Pass (completed 2026-05-07)
+- [x] Create SVG wordmark (public/brand/specsmith-wordmark.svg) — text-based navbar logo
+- [x] Mascot (specsmith-logo.png) placed in hero and The Smith section — NOT in navbar
+- [x] Homepage: split hero layout (headline left, mascot right)
+- [x] Homepage: sticky navbar with SVG wordmark + nav links + CTA
+- [x] Homepage: layered atmospheric background (radial glows, ambient columns, dot grid)
+- [x] Homepage: scroll reveal animations (IntersectionObserver + CSS transitions)
+- [x] Homepage: benefit cards section with numbered accent
+- [x] Homepage: process section with 5-agent grid, QA Reviewer highlighted
+- [x] Homepage: The Smith section with mascot + telemetry log
+- [x] Homepage: final CTA section with background glow
+- [x] Homepage: intentional footer with wordmark + nav links
+- [x] Analyze page: SVG wordmark in navbar (no mascot in nav)
+- [x] globals.css: scroll reveal CSS + smooth scroll
+- [x] Build and TypeScript verified
+
 ### Frontend Polish (completed 2026-05-07)
 - [x] Reduce hero vertical whitespace, tighten section rhythm
 - [x] Replace plain-text feature list with purple-dot badge chips
