@@ -44,10 +44,12 @@ The QA Reviewer includes a real feedback loop: if any HIGH or CRITICAL risk lack
 
 ## Demo Flow
 
+**Live demo**: https://specsmith.vercel.app/ (no account required, mock mode)
+
 1. Open the homepage
 2. Paste or load an example spec (Todo API, Checkout Flow PRD, or User Auth OpenAPI)
 3. Select input type and test framework
-4. Click **Analyze**
+4. Click **Forge Test Plan**
 5. Watch the 5-agent pipeline execute with live progress
 6. Review: risk registry, test matrix, generated test file, coverage score, gap report
 
