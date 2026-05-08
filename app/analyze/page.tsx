@@ -29,19 +29,13 @@ export default function AnalyzePage() {
 
   if (!result) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-emerald-950/20">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-400/30 bg-slate-950/70">
-              <img src="/brand/specsmith-logo.png" alt="SpecSmith logo" className="h-9 w-9 object-contain" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-100">The Smith is examining the blueprint...</p>
-              <p className="mt-1 text-xs text-slate-500">Heating the forge. Striking the anvil.</p>
-            </div>
-          </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
-            <div className="h-full w-2/3 animate-pulse rounded-full bg-emerald-500" />
+      <div className="flex min-h-screen items-center justify-center bg-[#060816]">
+        <div className="w-full max-w-md rounded-2xl border border-[#202A44] bg-[#10172A] p-6 text-center shadow-2xl shadow-violet-950/20">
+          <img src="/brand/specsmith-wordmark.svg" alt="SpecSmith" className="mx-auto mb-5 h-6 w-auto" />
+          <p className="text-sm font-semibold text-slate-100">The Smith is examining the blueprint...</p>
+          <p className="mt-1 text-xs text-slate-500">Heating the forge. Striking the anvil.</p>
+          <div className="mt-5 h-1 overflow-hidden rounded-full bg-[#202A44]">
+            <div className="h-full w-2/3 animate-pulse rounded-full bg-violet-600" />
           </div>
         </div>
       </div>
@@ -66,30 +60,32 @@ export default function AnalyzePage() {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-slate-950 text-slate-100">
+    <div className="min-h-screen overflow-x-hidden bg-[#060816] text-slate-100">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-x-0 top-0 h-96 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.16),transparent_45%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.035)_1px,transparent_1px)] bg-[size:42px_42px]" />
+        <div className="absolute inset-x-0 top-0 h-96 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.15),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:42px_42px]" />
       </div>
 
-      <nav className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/85 px-6 py-4 backdrop-blur-xl">
+      <nav className="sticky top-0 z-20 border-b border-[#202A44] bg-[#060816]/90 px-6 py-3.5 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <button onClick={() => router.push("/")} className="flex items-center gap-3 text-left">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/30 bg-slate-950/70">
-              <img src="/brand/specsmith-logo.png" alt="SpecSmith logo" className="h-8 w-8 object-contain" />
+          <button onClick={() => router.push("/")} className="group flex items-center gap-2.5 text-left">
+            <img
+              src="/brand/specsmith-wordmark.svg"
+              alt="SpecSmith"
+              className="h-[22px] w-auto"
+              draggable={false}
+            />
+            <span className="hidden text-[9px] font-medium uppercase tracking-[0.28em] text-violet-400/60 transition-colors group-hover:text-violet-400 sm:block">
+              Forge Report
             </span>
-            <div>
-              <div className="text-sm font-semibold tracking-tight text-white">SpecSmith</div>
-              <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400">Forge Report</div>
-            </div>
           </button>
           <div className="flex items-center gap-3">
-            <span className="hidden rounded-full border border-emerald-400/30 px-3 py-1 text-xs font-medium text-emerald-300 sm:inline-flex">
+            <span className="hidden rounded-full border border-violet-400/30 px-3 py-1 text-xs font-medium text-violet-300 sm:inline-flex">
               Forge Process Complete
             </span>
             <button
               onClick={() => router.push("/")}
-              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:-translate-y-0.5 hover:border-emerald-400/40 hover:text-slate-100"
+              className="rounded-lg border border-[#202A44] bg-[#10172A] px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:-translate-y-0.5 hover:border-violet-400/40 hover:text-slate-100"
             >
               New Analysis
             </button>
@@ -99,15 +95,15 @@ export default function AnalyzePage() {
 
       <main className="mx-auto max-w-7xl space-y-5 px-6 py-8">
         <section className="grid gap-5 lg:grid-cols-[1.4fr_0.9fr]">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-6 backdrop-blur-md">
+          <div className="rounded-2xl border border-[#202A44] bg-[#10172A] p-6">
             <div className="mb-5 flex flex-wrap gap-2">
-              <span className="rounded-full border border-white/10 bg-slate-900/80 px-2.5 py-1 text-xs font-medium text-slate-400">
+              <span className="rounded-full border border-[#202A44] bg-[#0B1020] px-2.5 py-1 text-xs font-medium text-slate-400">
                 {inputTypeLabel[result.summary.inputType] ?? result.summary.inputType}
               </span>
-              <span className="rounded-full border border-white/10 bg-slate-900/80 px-2.5 py-1 text-xs font-medium text-slate-400">
+              <span className="rounded-full border border-[#202A44] bg-[#0B1020] px-2.5 py-1 text-xs font-medium text-slate-400">
                 {frameworkLabel[result.testFile?.framework ?? ""] ?? result.testFile?.framework}
               </span>
-              <span className="rounded-full border border-white/10 bg-slate-900/80 px-2.5 py-1 font-mono text-xs text-slate-500">
+              <span className="rounded-full border border-[#202A44] bg-[#0B1020] px-2.5 py-1 font-mono text-xs text-slate-500">
                 {result.providerMode}
               </span>
               {result.coverage.plannerRevised && (
@@ -124,7 +120,7 @@ export default function AnalyzePage() {
               <StatCell label="High" value={highCount} valueClass="text-amber-300" />
               <StatCell label="Medium" value={mediumCount} valueClass="text-yellow-300" />
               <StatCell label="Risks" value={result.riskRegistry.length} valueClass="text-slate-200" />
-              <StatCell label="Tests" value={result.testMatrix.length} valueClass="text-emerald-300" />
+              <StatCell label="Tests" value={result.testMatrix.length} valueClass="text-violet-300" />
             </div>
           </div>
 
@@ -145,7 +141,7 @@ export default function AnalyzePage() {
         </section>
 
         <div className="pb-6 text-center text-xs text-slate-700">
-          SpecSmith QA Forge - AMD Developer Hackathon - PopLabs
+          SpecSmith QA Forge · PopLabs
         </div>
       </main>
     </div>
@@ -162,7 +158,7 @@ function StatCell({
   valueClass: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-950/55 px-4 py-3">
+    <div className="rounded-xl border border-[#202A44] bg-[#060816]/55 px-4 py-3">
       <div className={`text-2xl font-semibold tabular-nums ${valueClass}`}>{value}</div>
       <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-slate-600">{label}</div>
     </div>
