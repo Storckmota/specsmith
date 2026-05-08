@@ -128,6 +128,7 @@ export default function HomePage() {
   const [inputType, setInputType] = useState<InputType>("plain_spec");
   const [framework, setFramework] = useState<Framework>("playwright");
   const [isLoading, setIsLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -139,7 +140,10 @@ export default function HomePage() {
     setInputType(example.inputType);
   };
 
+  const isAnalyzing = isLoading || cooldown;
+
   const handleAnalyze = async () => {
+    if (isAnalyzing) return;
     if (!specText.trim()) {
       setError("Please enter a spec or load an example.");
       return;
@@ -163,6 +167,8 @@ export default function HomePage() {
       setError(err instanceof Error ? err.message : "Analysis failed");
     } finally {
       setIsLoading(false);
+      setCooldown(true);
+      setTimeout(() => setCooldown(false), 1500);
     }
   };
 
@@ -388,7 +394,8 @@ export default function HomePage() {
                     <button
                       key={key}
                       onClick={() => handleLoadExample(key)}
-                      className="rounded-full border border-[#202A44] bg-[#0B1020] px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:-translate-y-0.5 hover:border-violet-500/40 hover:text-slate-100"
+                      disabled={isAnalyzing}
+                      className="rounded-full border border-[#202A44] bg-[#0B1020] px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:-translate-y-0.5 hover:border-violet-500/40 hover:text-slate-100 disabled:pointer-events-none disabled:opacity-40"
                     >
                       {EXAMPLE_SPECS[key].label}
                     </button>
@@ -401,7 +408,8 @@ export default function HomePage() {
                 value={specText}
                 onChange={(e) => setSpecText(e.target.value)}
                 placeholder="Paste your product spec, PRD, GitHub issue, or OpenAPI doc here..."
-                className="h-56 w-full resize-none rounded-xl border border-[#202A44] bg-[#060816]/80 px-4 py-4 font-mono text-sm leading-7 text-slate-200 outline-none placeholder:text-slate-700 transition focus:border-violet-500/50 focus:ring-4 focus:ring-violet-500/10"
+                disabled={isAnalyzing}
+                className="h-56 w-full resize-none rounded-xl border border-[#202A44] bg-[#060816]/80 px-4 py-4 font-mono text-sm leading-7 text-slate-200 outline-none placeholder:text-slate-700 transition focus:border-violet-500/50 focus:ring-4 focus:ring-violet-500/10 disabled:opacity-60"
               />
 
               {/* Controls */}
@@ -413,7 +421,8 @@ export default function HomePage() {
                       <select
                         value={inputType}
                         onChange={(e) => setInputType(e.target.value as InputType)}
-                        className="h-11 w-full appearance-none rounded-xl border border-[#202A44] bg-[#0B1020] pl-3 pr-10 text-sm text-slate-200 outline-none transition focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/10"
+                        disabled={isAnalyzing}
+                        className="h-11 w-full appearance-none rounded-xl border border-[#202A44] bg-[#0B1020] pl-3 pr-10 text-sm text-slate-200 outline-none transition focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/10 disabled:opacity-60"
                       >
                         <option value="plain_spec">Plain Spec</option>
                         <option value="prd">PRD</option>
@@ -435,7 +444,8 @@ export default function HomePage() {
                       <select
                         value={framework}
                         onChange={(e) => setFramework(e.target.value as Framework)}
-                        className="h-11 w-full appearance-none rounded-xl border border-[#202A44] bg-[#0B1020] pl-3 pr-10 text-sm text-slate-200 outline-none transition focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/10"
+                        disabled={isAnalyzing}
+                        className="h-11 w-full appearance-none rounded-xl border border-[#202A44] bg-[#0B1020] pl-3 pr-10 text-sm text-slate-200 outline-none transition focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/10 disabled:opacity-60"
                       >
                         <option value="playwright">Playwright</option>
                         <option value="jest">Jest</option>
@@ -454,7 +464,8 @@ export default function HomePage() {
 
                 <button
                   onClick={handleAnalyze}
-                  disabled={isLoading}
+                  disabled={isAnalyzing}
+                  aria-busy={isLoading}
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-violet-600 px-8 py-3 text-sm font-semibold text-white shadow-[0_0_24px_rgba(124,58,237,0.3)] transition hover:-translate-y-0.5 hover:bg-violet-500 disabled:bg-slate-800 disabled:text-slate-500 disabled:shadow-none"
                 >
                   {isLoading ? (
