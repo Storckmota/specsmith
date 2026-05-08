@@ -9,18 +9,20 @@ export const InputTypeSchema = z.enum([
 
 export const FrameworkSchema = z.enum(["playwright", "jest", "pytest"]);
 
-export const SeveritySchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
+export const SeveritySchema = z.preprocess(
+  (val) => (typeof val === "string" ? val.toUpperCase() : val),
+  z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"])
+);
 
-export const TestCategorySchema = z.enum([
-  "happy_path",
-  "edge_case",
-  "negative_case",
-  "regression",
-  "api_validation",
-  "abuse_case",
-]);
+export const TestCategorySchema = z.preprocess(
+  (val) => (typeof val === "string" ? val.toLowerCase() : val),
+  z.enum(["happy_path", "edge_case", "negative_case", "regression", "api_validation", "abuse_case"])
+);
 
-export const PrioritySchema = z.enum(["LOW", "MEDIUM", "HIGH"]);
+export const PrioritySchema = z.preprocess(
+  (val) => (typeof val === "string" ? val.toUpperCase() : val),
+  z.enum(["LOW", "MEDIUM", "HIGH"])
+);
 
 export const AnalyzeRequestSchema = z.object({
   specText: z.string().min(10).max(50000),

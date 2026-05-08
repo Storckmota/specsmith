@@ -20,7 +20,13 @@ export class MockProvider implements AiProvider {
       return JSON.stringify(mockTestMatrix);
     }
     if (userPrompt.includes("Generate executable test")) {
-      return JSON.stringify(mockTestFile);
+      return [
+        "===METADATA===",
+        JSON.stringify({ framework: mockTestFile.framework, filename: mockTestFile.filename }),
+        "===CODE===",
+        mockTestFile.code,
+        "===END===",
+      ].join("\n");
     }
     if (userPrompt.includes("Review test coverage")) {
       return JSON.stringify(mockCoverageResult);

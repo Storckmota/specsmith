@@ -1,14 +1,47 @@
 import type { AiProvider } from "../providers/index";
 import { TestFileSchema, type TestCase, type Framework, type TestFile } from "../schemas/analysis";
-import { extractJson } from "../utils/json";
+
+const META_TAG = "===METADATA===";
+const CODE_TAG = "===CODE===";
+const END_TAG = "===END===";
 
 const SYSTEM_PROMPT = `You are a Test Writer agent. Generate executable test code from test matrices.
 
-Output rules:
-- Return ONLY a raw JSON object. No prose, no explanation, no markdown, no code fences around the JSON itself.
-- Your response must start with { and end with }.
-- The "code" field is a plain string containing the full test file source — it may contain any language syntax.
-- Match the schema exactly: framework, filename, code.`;
+Respond using EXACTLY this format — delimiters must appear on their own lines:
+===METADATA===
+{"framework":"<framework>","filename":"<filename>"}
+===CODE===
+<full test source code — any syntax, no restrictions>
+===END===
+
+Do not output anything before ===METADATA=== or after ===END===.`;
+
+function parseTestWriterOutput(raw: string, framework: Framework): TestFile {
+  const metaIdx = raw.indexOf(META_TAG);
+  const codeIdx = raw.indexOf(CODE_TAG);
+  const endIdx = raw.lastIndexOf(END_TAG);
+
+  if (metaIdx === -1 || codeIdx === -1 || endIdx === -1) {
+    throw new Error(`Test Writer: delimiters missing. Preview: ${raw.slice(0, 400)}`);
+  }
+
+  const metaRaw = raw.slice(metaIdx + META_TAG.length, codeIdx).trim();
+  const code = raw.slice(codeIdx + CODE_TAG.length, endIdx).trim();
+
+  let meta: { framework?: string; filename?: string };
+  try {
+    meta = JSON.parse(metaRaw);
+  } catch {
+    throw new Error(`Test Writer: metadata JSON invalid. Preview: ${metaRaw.slice(0, 200)}`);
+  }
+
+  const ext = framework === "pytest" ? "py" : "ts";
+  return TestFileSchema.parse({
+    framework: meta.framework ?? framework,
+    filename: meta.filename ?? `spec.${ext}`,
+    code,
+  });
+}
 
 export async function runTestWriter(
   provider: AiProvider,
@@ -21,17 +54,12 @@ export async function runTestWriter(
     pytest: "Use pytest with def test_ functions. Include necessary imports.",
   };
 
-  const userPrompt = `Generate executable test ${framework} code from this test matrix and return a JSON object only:
+  const userPrompt = `Generate executable ${framework} test code from this test matrix:
 
 ${JSON.stringify(tests, null, 2)}
 
 Framework: ${framework}
 Instructions: ${frameworkInstructions[framework]}
-
-Return a JSON object with exactly these fields:
-- "framework": "${framework}"
-- "filename": appropriate test filename (e.g., "spec.test.ts" for jest, "test_spec.py" for pytest)
-- "code": the complete executable test source as a single string
 
 The code must:
 - Implement all test cases from the matrix
@@ -39,9 +67,13 @@ The code must:
 - Include placeholder assertions that communicate intent
 - Be syntactically valid ${framework} code
 
-No markdown around the JSON. The code string inside may contain any syntax. Raw JSON object only.`;
+Return using this exact format:
+===METADATA===
+{"framework":"${framework}","filename":"<appropriate filename>"}
+===CODE===
+<full test source code>
+===END===`;
 
   const raw = await provider.complete(SYSTEM_PROMPT, userPrompt);
-  const json = extractJson(raw);
-  return TestFileSchema.parse(json);
+  return parseTestWriterOutput(raw, framework);
 }
