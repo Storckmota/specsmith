@@ -19,7 +19,16 @@ export class MockProvider implements AiProvider {
     if (userPrompt.includes("Create test matrix")) {
       return JSON.stringify(mockTestMatrix);
     }
-    if (userPrompt.includes("Generate executable test")) {
+    if (userPrompt.startsWith("Generate executable ") && userPrompt.includes("test code from this test matrix")) {
+      return [
+        "===METADATA===",
+        JSON.stringify({ framework: mockTestFile.framework, filename: mockTestFile.filename }),
+        "===CODE===",
+        mockTestFile.code,
+        "===END===",
+      ].join("\n");
+    }
+    if (userPrompt.startsWith("Your previous response did not follow")) {
       return [
         "===METADATA===",
         JSON.stringify({ framework: mockTestFile.framework, filename: mockTestFile.filename }),
