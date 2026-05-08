@@ -10,8 +10,14 @@ import TestFileOutput from "@/components/TestFileOutput";
 import CoverageScore from "@/components/CoverageScore";
 import GapReport from "@/components/GapReport";
 
-function useReveal() {
+export default function AnalyzePage() {
+  const router = useRouter();
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Reveal hook runs after result is set so [data-reveal] elements exist in DOM
   useEffect(() => {
+    if (!result) return;
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -22,43 +28,96 @@ function useReveal() {
     );
     document.querySelectorAll("[data-reveal]").forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
-}
-
-export default function AnalyzePage() {
-  const router = useRouter();
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-
-  useReveal();
+  }, [result]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("specsmith-result");
     if (!stored) {
-      router.push("/");
+      setLoading(false);
       return;
     }
     try {
       setResult(JSON.parse(stored));
     } catch {
-      router.push("/");
+      // invalid stored data — fall through to empty state
     }
-  }, [router]);
+    setLoading(false);
+  }, []);
 
-  if (!result) {
+  // Minimal spinner while sessionStorage is read (single frame on most devices)
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#060816]">
-        <div className="w-full max-w-md rounded-2xl border border-[#202A44] bg-[#10172A] p-6 text-center shadow-2xl shadow-violet-950/20">
-          <img src="/brand/specsmith-wordmark.svg" alt="SpecSmith" className="mx-auto mb-5 h-6 w-auto" />
-          <p className="text-sm font-semibold text-slate-100">The Smith is examining the blueprint...</p>
-          <p className="mt-1 text-xs text-slate-500">Heating the forge. Striking the anvil.</p>
-          <div className="mt-5 h-1 overflow-hidden rounded-full bg-[#202A44]">
-            <div className="h-full w-2/3 animate-pulse rounded-full bg-violet-600" />
-          </div>
-        </div>
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#202A44] border-t-violet-500" />
       </div>
     );
   }
 
+  // Empty state — no result stored
+  if (!result) {
+    return (
+      <div className="min-h-screen bg-[#060816] text-slate-100">
+        <div className="pointer-events-none fixed inset-0 -z-10">
+          <div className="absolute inset-x-0 top-0 h-96 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.12),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:42px_42px]" />
+        </div>
+
+        <nav className="sticky top-0 z-20 border-b border-[#202A44] bg-[#060816]/90 px-6 py-3.5 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+            <button onClick={() => router.push("/")} className="flex items-center">
+              <img
+                src="/brand/specsmith-wordmark.svg"
+                alt="SpecSmith"
+                className="h-[22px] w-auto"
+                draggable={false}
+              />
+            </button>
+            <button
+              onClick={() => router.push("/")}
+              className="rounded-lg border border-[#202A44] bg-[#10172A] px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:-translate-y-0.5 hover:border-violet-400/40 hover:text-slate-100"
+            >
+              Go to Forge
+            </button>
+          </div>
+        </nav>
+
+        <main className="mx-auto flex max-w-lg flex-col items-center px-6 py-24 text-center">
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#2B3560] bg-[#10172A]">
+            <svg className="h-7 w-7 text-violet-400" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M9 12h6M9 16h6M7 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2M9 4h6M9 4a1 1 0 0 0-1 1v1h8V5a1 1 0 0 0-1-1H9Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+
+          <h1 className="text-2xl font-semibold tracking-tight text-white">
+            No Forge Report Loaded
+          </h1>
+          <p className="mt-4 max-w-sm text-sm leading-7 text-slate-400">
+            Run a spec through SpecSmith first. The Forge Report appears here after the QA
+            pipeline generates risks, tests, coverage, and gaps.
+          </p>
+
+          <button
+            onClick={() => router.push("/")}
+            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-7 py-3 text-sm font-semibold text-white shadow-[0_0_24px_rgba(124,58,237,0.3)] transition hover:-translate-y-0.5 hover:bg-violet-500"
+          >
+            Start New Analysis
+          </button>
+
+          <p className="mt-6 text-xs text-slate-700">
+            Results are not persisted between sessions.
+          </p>
+        </main>
+      </div>
+    );
+  }
+
+  // Full report
   const criticalCount = result.riskRegistry.filter((r) => r.severity === "CRITICAL").length;
   const highCount = result.riskRegistry.filter((r) => r.severity === "HIGH").length;
   const mediumCount = result.riskRegistry.filter((r) => r.severity === "MEDIUM").length;

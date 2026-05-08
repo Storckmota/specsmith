@@ -409,28 +409,46 @@ export default function HomePage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.15em] text-slate-500">Input Type</span>
-                    <select
-                      value={inputType}
-                      onChange={(e) => setInputType(e.target.value as InputType)}
-                      className="w-full min-w-40 rounded-xl border border-[#202A44] bg-[#0B1020] px-3 py-2.5 text-sm text-slate-200 outline-none transition focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/10"
-                    >
-                      <option value="plain_spec">Plain Spec</option>
-                      <option value="prd">PRD</option>
-                      <option value="openapi">OpenAPI</option>
-                      <option value="github_issue">GitHub Issue</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={inputType}
+                        onChange={(e) => setInputType(e.target.value as InputType)}
+                        className="h-11 w-full appearance-none rounded-xl border border-[#202A44] bg-[#0B1020] pl-3 pr-10 text-sm text-slate-200 outline-none transition focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/10"
+                      >
+                        <option value="plain_spec">Plain Spec</option>
+                        <option value="prd">PRD</option>
+                        <option value="openapi">OpenAPI</option>
+                        <option value="github_issue">GitHub Issue</option>
+                      </select>
+                      <svg
+                        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
                   </label>
                   <label className="block">
                     <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.15em] text-slate-500">Test Framework</span>
-                    <select
-                      value={framework}
-                      onChange={(e) => setFramework(e.target.value as Framework)}
-                      className="w-full min-w-40 rounded-xl border border-[#202A44] bg-[#0B1020] px-3 py-2.5 text-sm text-slate-200 outline-none transition focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/10"
-                    >
-                      <option value="playwright">Playwright</option>
-                      <option value="jest">Jest</option>
-                      <option value="pytest">Pytest</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={framework}
+                        onChange={(e) => setFramework(e.target.value as Framework)}
+                        className="h-11 w-full appearance-none rounded-xl border border-[#202A44] bg-[#0B1020] pl-3 pr-10 text-sm text-slate-200 outline-none transition focus:border-violet-500/40 focus:ring-4 focus:ring-violet-500/10"
+                      >
+                        <option value="playwright">Playwright</option>
+                        <option value="jest">Jest</option>
+                        <option value="pytest">Pytest</option>
+                      </select>
+                      <svg
+                        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
                   </label>
                 </div>
 
