@@ -1,6 +1,10 @@
 import type { AiProvider } from "../providers/index";
 import { TestFileSchema, type TestCase, type Framework, type TestFile } from "../schemas/analysis";
 
+function debugPreview(s: string, len: number): string {
+  return process.env.DEBUG_AGENT_OUTPUT === "true" ? ` Preview: ${s.slice(0, len)}` : "";
+}
+
 const META_TAG = "===METADATA===";
 const CODE_TAG = "===CODE===";
 const END_TAG = "===END===";
@@ -22,7 +26,11 @@ function parseTestWriterOutput(raw: string, framework: Framework): TestFile {
   const endIdx = raw.lastIndexOf(END_TAG);
 
   if (metaIdx === -1 || codeIdx === -1 || endIdx === -1) {
-    throw new Error(`Test Writer: delimiters missing. Preview: ${raw.slice(0, 400)}`);
+    throw new Error(`Test Writer: delimiters missing.${debugPreview(raw, 400)}`);
+  }
+
+  if (!(metaIdx < codeIdx && codeIdx < endIdx)) {
+    throw new Error("Test Writer: delimiters out of order (expected METADATA < CODE < END).");
   }
 
   const metaRaw = raw.slice(metaIdx + META_TAG.length, codeIdx).trim();
@@ -32,7 +40,7 @@ function parseTestWriterOutput(raw: string, framework: Framework): TestFile {
   try {
     meta = JSON.parse(metaRaw);
   } catch {
-    throw new Error(`Test Writer: metadata JSON invalid. Preview: ${metaRaw.slice(0, 200)}`);
+    throw new Error(`Test Writer: metadata JSON invalid.${debugPreview(metaRaw, 200)}`);
   }
 
   const ext = framework === "pytest" ? "py" : "ts";

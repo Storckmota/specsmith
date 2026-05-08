@@ -1,13 +1,7 @@
-/**
- * Robustly extract a JSON value from a model response string.
- *
- * Handles common LLM output issues:
- *   - ```json ... ``` or ``` ... ``` markdown fences
- *   - Leading/trailing prose around a JSON object or array
- *   - Extra whitespace
- *
- * Throws a descriptive error if no valid JSON can be extracted.
- */
+function debugPreview(s: string, len: number): string {
+  return process.env.DEBUG_AGENT_OUTPUT === "true" ? ` Preview: ${s.slice(0, len)}` : "";
+}
+
 export function extractJson(raw: string): unknown {
   const trimmed = raw.trim();
 
@@ -49,6 +43,6 @@ export function extractJson(raw: string): unknown {
   }
 
   throw new Error(
-    `Failed to parse JSON from model output. Preview: ${trimmed.slice(0, 400)}`
+    `Failed to parse JSON from model output.${debugPreview(trimmed, 400)}`
   );
 }

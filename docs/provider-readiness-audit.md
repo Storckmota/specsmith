@@ -177,3 +177,11 @@ Do not pause for AMD Developer Cloud yet. API mode is the right Phase 3 bridge: 
   - `83e1eb4 fix: refine visual system and responsiveness`
   - `fb8c8bb fix: apply approved SpecSmith logo asset`
   - `ddde02f feat: make API provider mode robust`
+
+## 11. Deployment Safety
+
+- Default to `PROVIDER=mock` for any public or uncontrolled deployment. Mock mode requires no API key and produces stable, deterministic output.
+- `PROVIDER=api` uses a server-side API key (`API_KEY` in `.env.local`). Never expose `.env.local` or commit it to version control.
+- Use `API_MODEL=gpt-4o-mini` for validation and low-cost testing. Switch to a stronger model only for a final controlled demo if output quality requires it.
+- Set `DEBUG_AGENT_OUTPUT=true` locally to include model output previews in parse error messages. Leave it unset in production — parse errors return generic messages with no raw model content.
+- `PROVIDER=api` smoke test passed with `gpt-4o-mini` (commit `28f4f00`). Two schema fixes were required: case normalization on `PrioritySchema` / `SeveritySchema`, and a delimiter-based output format for the Test Writer to avoid JSON escaping failures in generated code.
