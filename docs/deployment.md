@@ -22,13 +22,35 @@ in the response is set to `"API mode → Mock fallback"` so the fallback is alwa
 PROVIDER=api
 API_KEY=<your_openrouter_key>
 API_BASE_URL=https://openrouter.ai/api/v1
-API_MODEL=qwen/qwen-2.5-72b-instruct
+API_MODEL=qwen/qwen-2.5-7b-instruct   # see model guidance below
+API_TIMEOUT_MS=30000
 ENABLE_PROVIDER_FALLBACK=true
 ```
 
-**Qwen model validation**: `qwen/qwen-2.5-72b-instruct` was validated with the full
-5-agent pipeline on the User Auth OpenAPI example. HTTP 200, all 5 agents passed,
-QA Reviewer score 95/100. See `docs/qwen-validation.md`.
+**Model guidance for Vercel**:
+`qwen/qwen-2.5-72b-instruct` was validated end-to-end (score 95/100) but took
+~325 seconds — too slow for any Vercel function tier. Use a faster model for the
+public deploy:
+
+| Model | Approx latency (5-agent pipeline) | Suitable for Vercel |
+|---|---|---|
+| `qwen/qwen-2.5-72b-instruct` | ~325s | No — exceeds function limits |
+| `qwen/qwen-2.5-7b-instruct` | ~30–60s (estimated) | Yes — fits within 60s maxDuration |
+| `gpt-4o-mini` | ~60–90s (validated) | Yes with higher maxDuration |
+
+**Timeout and fallback**:
+The per-call timeout is set by `API_TIMEOUT_MS` (default: 30 000 ms). The pipeline
+makes up to 5 sequential calls. With `API_TIMEOUT_MS=30000` and
+`ENABLE_PROVIDER_FALLBACK=true`, the worst case is: first slow call aborts at 30s →
+fallback triggers → mock report delivered in ~35s total. This fits well within the
+60-second `maxDuration` configured in the route.
+
+The fallback can only trigger if the provider throws (timeout, 5xx, network error).
+It cannot rescue a function that Vercel kills at the platform level — which is why
+keeping `API_TIMEOUT_MS` below Vercel's function limit is essential.
+
+**Qwen validation evidence**: `qwen/qwen-2.5-72b-instruct` validated locally (not on
+Vercel) with full pipeline. See `docs/qwen-validation.md`.
 
 **Abuse protection**: The public `/api/analyze` route includes:
 - Per-IP in-memory rate limit: 3 analysis requests per 10 minutes (HTTP 429)
@@ -100,9 +122,11 @@ npx tsc --noEmit     # type check
 PROVIDER=api
 API_KEY=<openrouter_key>
 API_BASE_URL=https://openrouter.ai/api/v1
-API_MODEL=qwen/qwen-2.5-72b-instruct
+API_MODEL=qwen/qwen-2.5-7b-instruct
+API_TIMEOUT_MS=30000
 ENABLE_PROVIDER_FALLBACK=true
 ```
+Note: use a fast model (7B not 72B) to stay within Vercel function limits.
 
 **Safe mock fallback deploy:**
 ```

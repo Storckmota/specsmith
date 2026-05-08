@@ -1,6 +1,8 @@
 import type { AiProvider } from "./mock-provider";
 
-const REQUEST_TIMEOUT_MS = 90_000; // 90 seconds — generous for long specs
+// Per-call timeout. Default 30s keeps the fallback well within Vercel function limits.
+// Raise via API_TIMEOUT_MS for controlled local/supervised demos with large models.
+const REQUEST_TIMEOUT_MS = parseInt(process.env.API_TIMEOUT_MS || "30000", 10);
 
 export class ApiProvider implements AiProvider {
   private readonly baseUrl: string;

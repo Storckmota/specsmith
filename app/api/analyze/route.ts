@@ -1,5 +1,10 @@
 import { NextRequest } from "next/server";
 import { createHash } from "crypto";
+
+// Tell Vercel/Next.js this route may run up to 60 seconds.
+// Requires Pro plan for > 10s. With API_TIMEOUT_MS=30000 and
+// ENABLE_PROVIDER_FALLBACK=true, the fallback always fires before this limit.
+export const maxDuration = 60;
 import { AnalyzeRequestSchema } from "@/lib/schemas/analysis";
 import type { AnalysisResult } from "@/lib/schemas/analysis";
 import { runPipeline, runPipelineMockFallback } from "@/lib/agents/pipeline";
