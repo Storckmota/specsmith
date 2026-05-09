@@ -32,7 +32,7 @@ SpecSmith is not a test generator. It is an agentic QA workflow — five agents 
 
 **Live demo**: https://specsmith.vercel.app/ — no account required.
 
-The public demo runs in `PROVIDER=api` mode with Qwen via OpenRouter. For reliability, `ENABLE_PROVIDER_FALLBACK=true` is set: if the provider times out or fails, the pipeline returns mock output and marks `providerMode` as `"API mode → Mock fallback"` — the demo never crashes and the fallback is always disclosed. Controlled API validation has been confirmed with both `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (OpenRouter).
+The public demo runs `PROVIDER=api` with Qwen 7B via OpenRouter. If Qwen fails or times out, the app returns a friendly error message — it does not silently replace the user's analysis with canned mock output. Two timeout guards protect against Vercel platform HTML errors: `API_TIMEOUT_MS=8000` per model call and `API_ROUTE_TIMEOUT_MS=7000` for the full route. Controlled API validation has been confirmed with both `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (OpenRouter).
 
 **Demo flow:**
 
@@ -86,7 +86,7 @@ Forge Report
 | `mock` | ✅ Available | Safe fallback — no API key, deterministic fixture output |
 | `api` / gpt-4o-mini | ✅ Validated | Controlled local test (OpenAI) |
 | `api` / Qwen 2.5 72B | ✅ Validated | Full pipeline evidence — too slow for Vercel, see docs |
-| `api` / Qwen 2.5 7B | ✅ Public demo | OpenRouter, `API_TIMEOUT_MS=8000`, `ENABLE_PROVIDER_FALLBACK=true` |
+| `api` / Qwen 2.5 7B | ✅ Public demo | OpenRouter, `API_TIMEOUT_MS=8000`, `API_ROUTE_TIMEOUT_MS=7000`, `ENABLE_PROVIDER_FALLBACK=false` |
 | `amd` / vLLM / Qwen | 🟡 Planned | Pending AMD Developer Cloud credits |
 
 The `amd` provider path is present and documented, but not live. No AMD Developer Cloud runtime has been configured — AMD mode is pending GPU credit allocation.
@@ -126,7 +126,7 @@ SpecSmith was designed so the provider layer can point to a vLLM endpoint runnin
 | AI provider abstraction | OpenAI-compatible chat completions interface |
 | Provider modes | `mock` (fixtures), `api` (any OpenAI-compatible endpoint), `amd` (planned) |
 | Validated models | gpt-4o-mini (OpenAI), qwen/qwen-2.5-72b-instruct (OpenRouter) |
-| Deployment | Vercel — `PROVIDER=api`, Qwen 7B via OpenRouter, `ENABLE_PROVIDER_FALLBACK=true` |
+| Deployment | Vercel — `PROVIDER=api`, Qwen 7B via OpenRouter, `ENABLE_PROVIDER_FALLBACK=false` |
 | Planned inference | AMD Developer Cloud + vLLM + Qwen on MI300X |
 
 ---
@@ -155,7 +155,7 @@ Forge Report
 | Mode | How it works |
 |---|---|
 | `PROVIDER=mock` | Returns deterministic fixture data through all five agents. No API key required. |
-| `PROVIDER=api` | Calls any OpenAI-compatible `/chat/completions` endpoint. Requires `API_KEY`. Set `ENABLE_PROVIDER_FALLBACK=true` for public demo reliability. |
+| `PROVIDER=api` | Calls any OpenAI-compatible `/chat/completions` endpoint. Requires `API_KEY`. On failure returns a friendly JSON error. Set `ENABLE_PROVIDER_FALLBACK=true` only for internal demos that need transparent mock fallback. |
 | `PROVIDER=amd` | Designed to call a configured vLLM endpoint running Qwen on AMD Developer Cloud. Same interface as API mode. |
 
 ---
@@ -180,7 +180,7 @@ Open http://localhost:3000.
 
 ## Environment Variables
 
-**Public Vercel demo** (Qwen 7B via OpenRouter, with fallback):
+**Public Vercel Hobby demo** (Qwen 7B via OpenRouter, friendly JSON errors on failure):
 
 ```bash
 PROVIDER=api
@@ -188,14 +188,14 @@ API_BASE_URL=https://openrouter.ai/api/v1
 API_MODEL=qwen/qwen-2.5-7b-instruct
 API_KEY=your_openrouter_key_here
 API_TIMEOUT_MS=8000
-ENABLE_PROVIDER_FALLBACK=true
+API_ROUTE_TIMEOUT_MS=7000
+ENABLE_PROVIDER_FALLBACK=false
 DEBUG_AGENT_OUTPUT=false
 ```
 
-`API_TIMEOUT_MS=8000` keeps each provider call under 8 seconds so the fallback
-fires before Vercel Hobby's function limit. `ENABLE_PROVIDER_FALLBACK=true` means
-the demo returns a mock report (clearly labelled `"API mode → Mock fallback"`) if
-OpenRouter fails or times out — never a crash.
+`API_TIMEOUT_MS=8000` caps each model call. `API_ROUTE_TIMEOUT_MS=7000` ensures the
+route returns a JSON 504 before Vercel's platform timeout page appears. Provider
+failures surface a friendly error message in the UI — not a canned mock report.
 
 **Mock mode** (local development — no API key required):
 
@@ -221,8 +221,8 @@ only — never exposed to the browser. Never commit `.env.local`.
 
 ## Deployment
 
-- Public demo runs `PROVIDER=api` with Qwen 7B via OpenRouter and `ENABLE_PROVIDER_FALLBACK=true`
-- `PROVIDER=mock` is available as a zero-cost fallback for local use or if no API key is configured
+- Public demo runs `PROVIDER=api` with Qwen 7B via OpenRouter; provider failures return friendly JSON errors (`ENABLE_PROVIDER_FALLBACK=false`)
+- `PROVIDER=mock` is available for local use and CI — no API key required
 - Do not deploy `PROVIDER=api` without rate limiting — it is already built into the route
 - See [docs/deployment.md](docs/deployment.md) for the full deployment safety guide
 
@@ -243,7 +243,7 @@ only — never exposed to the browser. Never commit `.env.local`.
 
 ## Final Submission Notes
 
-- **Public demo** runs `PROVIDER=api` with `qwen/qwen-2.5-7b-instruct` via OpenRouter; `ENABLE_PROVIDER_FALLBACK=true` provides transparent mock fallback on failure
+- **Public demo** runs `PROVIDER=api` with `qwen/qwen-2.5-7b-instruct` via OpenRouter; provider failures return friendly JSON errors (`ENABLE_PROVIDER_FALLBACK=false`) — no canned mock output
 - **Qwen 72B validation** confirmed end-to-end (`qwen/qwen-2.5-72b-instruct`, score 95/100); too slow for Vercel, used as evidence only
 - **gpt-4o-mini validation** confirmed end-to-end (OpenAI controlled test)
 - **Qwen validation evidence** documented in `docs/qwen-validation.md`

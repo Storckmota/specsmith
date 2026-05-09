@@ -12,10 +12,9 @@
 
 ## Public demo deploy with Qwen via OpenRouter
 
-SpecSmith's public demo is configured for `PROVIDER=api` with Qwen via OpenRouter.
-The `ENABLE_PROVIDER_FALLBACK=true` setting ensures the demo never crashes: if the
-provider times out or fails, the pipeline returns mock output instead, and `providerMode`
-in the response is set to `"API mode → Mock fallback"` so the fallback is always visible.
+SpecSmith's public demo runs `PROVIDER=api` with Qwen 7B via OpenRouter.
+If Qwen fails or times out, the app returns a friendly JSON error to the frontend —
+it does **not** silently replace the user's analysis with canned mock output.
 
 ```bash
 # Platform env vars (Vercel / Netlify / Railway) — do not commit
@@ -24,7 +23,8 @@ API_KEY=<your_openrouter_key>
 API_BASE_URL=https://openrouter.ai/api/v1
 API_MODEL=qwen/qwen-2.5-7b-instruct
 API_TIMEOUT_MS=8000
-ENABLE_PROVIDER_FALLBACK=true
+API_ROUTE_TIMEOUT_MS=7000
+ENABLE_PROVIDER_FALLBACK=false
 DEBUG_AGENT_OUTPUT=false
 ```
 
@@ -36,22 +36,32 @@ the public deploy:
 | Model | Role | Suitable for Vercel Hobby |
 |---|---|---|
 | `qwen/qwen-2.5-72b-instruct` | Validation evidence | No — ~325s exceeds all limits |
-| `qwen/qwen-2.5-7b-instruct` | **Public Vercel demo** | Yes — with `API_TIMEOUT_MS=8000` |
+| `qwen/qwen-2.5-7b-instruct` | **Public Vercel demo** | Yes — with timeout guards |
 | `gpt-4o-mini` | Controlled local test | Locally only (60-90s per pipeline) |
 
-**Timeout and fallback**:
-`API_TIMEOUT_MS=8000` (8 seconds) is chosen for Vercel Hobby safety. Each provider
-call is aborted after 8 seconds. If the call fails, `ENABLE_PROVIDER_FALLBACK=true`
-causes the pipeline to return mock output in `~1s`, for a total response time of
-`~9s` — within Vercel Hobby's 10-second function window.
+**Timeout strategy**:
+Two independent timeout guards protect the public demo on Vercel Hobby:
 
-The fallback triggers only if the provider throws (timeout, 5xx, network error).
-Vercel killing the function at the platform level bypasses all JavaScript — which is
-why `API_TIMEOUT_MS` must be set lower than Vercel's limit, not equal to it.
+- `API_TIMEOUT_MS=8000` — per-model-call timeout. Each provider call is aborted
+  after 8 seconds via `AbortController`. Prevents a single slow LLM call from
+  hanging the function.
+- `API_ROUTE_TIMEOUT_MS=7000` — total route deadline. If the full pipeline hasn't
+  completed within 7 seconds, `/api/analyze` returns HTTP 504 with a friendly JSON
+  error before the Vercel platform can return an HTML timeout page.
 
-`providerMode` in the response is always honest:
-- `"API mode"` — real Qwen output returned
-- `"API mode → Mock fallback"` — provider failed, mock output returned
+Both must be set lower than Vercel Hobby's 10-second function limit.
+
+**Failure behavior** (`ENABLE_PROVIDER_FALLBACK=false`):
+If Qwen times out, returns a non-2xx response, or produces malformed output:
+- HTTP 504 (deadline) or 502 (parse failure) with JSON `{ "error": "..." }`
+- Frontend shows the error message — no raw HTML, no stack trace
+- User can retry with a shorter spec or try again later
+
+**Optional mock fallback** (`ENABLE_PROVIDER_FALLBACK=true`):
+Set this only for internal demos where uptime matters more than result authenticity.
+When enabled, provider failures return mock output labeled `"API mode → Mock fallback"`.
+**Do not use for the public demo** — it returns a canned report that ignores the
+user's actual spec, which is misleading.
 
 **Qwen validation evidence**: `qwen/qwen-2.5-72b-instruct` was validated locally
 (not on Vercel) with the full 5-agent pipeline, score 95/100. See `docs/qwen-validation.md`.
@@ -128,12 +138,16 @@ API_KEY=<openrouter_key>
 API_BASE_URL=https://openrouter.ai/api/v1
 API_MODEL=qwen/qwen-2.5-7b-instruct
 API_TIMEOUT_MS=8000
-ENABLE_PROVIDER_FALLBACK=true
+API_ROUTE_TIMEOUT_MS=7000
+ENABLE_PROVIDER_FALLBACK=false
 DEBUG_AGENT_OUTPUT=false
 ```
-`API_TIMEOUT_MS=8000` ensures fallback fires before Vercel Hobby's 10s function limit.
+`API_TIMEOUT_MS=8000` caps each model call. `API_ROUTE_TIMEOUT_MS=7000` ensures the
+route returns a JSON 504 before Vercel's platform timeout returns an HTML error page.
+`ENABLE_PROVIDER_FALLBACK=false` means provider failures return a friendly JSON error —
+not a canned mock report that ignores the user's spec.
 
-**Safe mock fallback deploy:**
+**Safe local mock deploy (no API key required):**
 ```
 PROVIDER=mock
 ```

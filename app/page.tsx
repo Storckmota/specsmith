@@ -156,15 +156,24 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ specText, inputType, framework }),
       });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Analysis failed");
+      const text = await res.text();
+      let data: unknown;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("The analysis service returned an invalid response. Please try again.");
       }
-      const result = await res.json();
-      sessionStorage.setItem("specsmith-result", JSON.stringify(result));
+      if (!res.ok) {
+        const msg =
+          data && typeof data === "object" && "error" in data && typeof (data as { error: unknown }).error === "string"
+            ? (data as { error: string }).error
+            : "Analysis failed. Please try again.";
+        throw new Error(msg);
+      }
+      sessionStorage.setItem("specsmith-result", JSON.stringify(data));
       router.push("/analyze");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Analysis failed");
+      setError(err instanceof Error ? err.message : "Analysis failed. Please try again.");
     } finally {
       setIsLoading(false);
       setCooldown(true);

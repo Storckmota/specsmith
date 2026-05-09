@@ -2,20 +2,17 @@ import { NextRequest } from "next/server";
 import { createHash } from "crypto";
 
 // Tell Vercel/Next.js this route may run up to 60 seconds.
-// Requires Pro plan for > 10s. With API_TIMEOUT_MS=30000 and
-// ENABLE_PROVIDER_FALLBACK=true, the fallback always fires before this limit.
 export const maxDuration = 60;
+
 import { AnalyzeRequestSchema } from "@/lib/schemas/analysis";
 import type { AnalysisResult } from "@/lib/schemas/analysis";
 import { runPipeline, runPipelineMockFallback } from "@/lib/agents/pipeline";
 
 // ─── Abuse protection ─────────────────────────────────────────────────────────
-// Best-effort single-process protection for hackathon demo.
-// Not distributed or production-grade rate limiting.
 
 const MAX_SPEC_CHARS = 15_000;
 const RATE_LIMIT_MAX = 3;
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 
 interface RateRecord {
   count: number;
@@ -49,7 +46,6 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
 }
 
 // ─── In-flight dedupe ─────────────────────────────────────────────────────────
-// Prevents duplicate pipeline runs for concurrent identical requests.
 
 const inFlightAnalyses = new Map<string, Promise<AnalysisResult>>();
 
@@ -83,7 +79,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // Spec length guard — return 413 before Zod validation
+  // Spec length guard
   if (
     typeof (body as Record<string, unknown>)?.specText === "string" &&
     (body as { specText: string }).specText.length > MAX_SPEC_CHARS
@@ -119,19 +115,44 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Start new pipeline run, with optional mock fallback on provider failure
+  const isApiMode = process.env.PROVIDER === "api";
+  const fallbackEnabled = process.env.ENABLE_PROVIDER_FALLBACK === "true";
+
+  // Route-level deadline: only races when in API mode.
+  // Fires before the platform (Vercel) can kill the function, ensuring a JSON
+  // 504 is returned rather than an HTML platform timeout page.
+  const ROUTE_TIMEOUT_MS = parseInt(process.env.API_ROUTE_TIMEOUT_MS || "7000", 10);
+
   const promise = (async (): Promise<AnalysisResult> => {
+    if (!isApiMode) {
+      // Mock mode — run directly, no timeout race needed.
+      return runPipeline(parsed.data);
+    }
+
+    // API mode: race the pipeline against the route deadline.
+    const deadlinePromise = new Promise<never>((_, reject) =>
+      setTimeout(
+        () =>
+          reject(
+            Object.assign(
+              new Error("The Qwen analysis took too long. Please try again with a shorter spec."),
+              { status: 504 }
+            )
+          ),
+        ROUTE_TIMEOUT_MS
+      )
+    );
+
     try {
-      return await runPipeline(parsed.data);
+      return await Promise.race([runPipeline(parsed.data), deadlinePromise]);
     } catch (error) {
-      if (
-        process.env.PROVIDER === "api" &&
-        process.env.ENABLE_PROVIDER_FALLBACK !== "false"
-      ) {
+      // If explicit fallback is enabled, swap to mock output and label it honestly.
+      if (fallbackEnabled) {
         const msg = error instanceof Error ? error.message : String(error);
         console.error("[specsmith] Provider failed — falling back to mock:", msg);
         return runPipelineMockFallback(parsed.data);
       }
+      // Otherwise re-throw so the caller returns a controlled JSON error.
       throw error;
     }
   })().finally(() => {
@@ -144,7 +165,33 @@ export async function POST(request: NextRequest) {
     const result = await promise;
     return Response.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Pipeline execution failed";
+    const isTimeout = (error as { status?: number }).status === 504;
+    const message =
+      error instanceof Error
+        ? error.message
+        : "The model response could not be converted into a valid Forge Report. Please try again.";
+
+    if (isTimeout) {
+      return Response.json({ error: message }, { status: 504 });
+    }
+
+    // Model output parse failures (e.g. delimiter errors) → 502 with friendly message.
+    const isParseError =
+      error instanceof Error &&
+      (error.message.includes("delimiters") ||
+        error.message.includes("metadata JSON") ||
+        error.message.includes("delimiters out of order"));
+
+    if (isParseError) {
+      return Response.json(
+        {
+          error:
+            "The model response could not be converted into a valid Forge Report. Please try again.",
+        },
+        { status: 502 }
+      );
+    }
+
     return Response.json({ error: message }, { status: 500 });
   }
 }
