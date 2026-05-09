@@ -1,4 +1,4 @@
-import type { AiProvider } from "./mock-provider";
+import type { AiProvider, ModelOptions } from "./mock-provider";
 
 // AMD mode calls a vLLM endpoint on AMD Developer Cloud running Qwen on MI300X.
 // The vLLM server exposes an OpenAI-compatible API at AMD_ENDPOINT.
@@ -15,7 +15,7 @@ export class AmdProvider implements AiProvider {
     }
   }
 
-  async complete(systemPrompt: string, userPrompt: string): Promise<string> {
+  async complete(systemPrompt: string, userPrompt: string, _options?: ModelOptions): Promise<string> {
     const response = await fetch(`${this.endpoint}/v1/chat/completions`, {
       method: "POST",
       headers: {

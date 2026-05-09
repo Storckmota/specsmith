@@ -1,4 +1,4 @@
-import type { AiProvider } from "./mock-provider";
+import type { AiProvider, ModelOptions } from "./mock-provider";
 
 // Per-call timeout. Default 30s keeps the fallback well within Vercel function limits.
 // Raise via API_TIMEOUT_MS for controlled local/supervised demos with large models.
@@ -22,7 +22,7 @@ export class ApiProvider implements AiProvider {
     }
   }
 
-  async complete(systemPrompt: string, userPrompt: string): Promise<string> {
+  async complete(systemPrompt: string, userPrompt: string, options?: ModelOptions): Promise<string> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -36,7 +36,8 @@ export class ApiProvider implements AiProvider {
         },
         body: JSON.stringify({
           model: this.model,
-          temperature: 0,
+          temperature: options?.temperature ?? 0,
+          ...(options?.max_tokens !== undefined && { max_tokens: options.max_tokens }),
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },

@@ -3,12 +3,17 @@ import { TestCaseSchema } from "../schemas/analysis";
 
 export type { TestCase } from "../schemas/analysis";
 
+export interface ModelOptions {
+  max_tokens?: number;
+  temperature?: number;
+}
+
 export interface AiProvider {
-  complete(systemPrompt: string, userPrompt: string): Promise<string>;
+  complete(systemPrompt: string, userPrompt: string, options?: ModelOptions): Promise<string>;
 }
 
 export class MockProvider implements AiProvider {
-  async complete(_systemPrompt: string, userPrompt: string): Promise<string> {
+  async complete(_systemPrompt: string, userPrompt: string, _options?: ModelOptions): Promise<string> {
     // Detect which agent is calling based on prompt content
     if (userPrompt.includes("Extract structured information")) {
       return JSON.stringify(mockParsedSpec);

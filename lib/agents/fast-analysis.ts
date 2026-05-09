@@ -40,8 +40,8 @@ const FastTestSchema = z.object({
 const FastResponseSchema = z.object({
   title: z.string(),
   detectedScope: z.string(),
-  risks: z.array(FastRiskSchema).min(1).max(8),
-  tests: z.array(FastTestSchema).min(1).max(15),
+  risks: z.array(FastRiskSchema).min(1).max(4),
+  tests: z.array(FastTestSchema).min(1).max(6),
   coverageScore: z.number().min(0).max(100),
   coverageSummary: z.string(),
   gaps: z.array(z.string()),
@@ -50,8 +50,9 @@ const FastResponseSchema = z.object({
 
 // ─── Prompts ──────────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are SpecSmith, an expert QA analyst. Analyze the provided specification and return a complete QA Forge Report as a single JSON object.
-Output JSON only. No markdown fences. No prose before or after the JSON.`;
+const SYSTEM_PROMPT = `You are SpecSmith, an expert QA analyst. Analyze the provided specification and return a QA Forge Report as a single JSON object.
+Output JSON only. No markdown fences. No prose before or after the JSON.
+Keep every field concise. Do not include long explanations. Generate the smallest useful Forge Report. Prefer fewer high-signal risks over exhaustive output.`;
 
 function buildPrompt(specText: string, inputType: string, framework: string): string {
   return `Analyze this ${inputType} specification for QA risks and test cases.
@@ -93,10 +94,11 @@ Return exactly this JSON structure (no markdown, no extra text):
 }
 
 Rules:
-- Generate 4–6 risks based on the actual spec content
-- Generate 6–10 test cases covering as many of these 6 categories as possible: happy_path, edge_case, negative_case, regression, api_validation, abuse_case
+- Generate exactly 3–4 risks — only the highest-signal findings from the actual spec
+- Generate exactly 4–6 test cases — prioritize coverage breadth over depth
 - Every CRITICAL and HIGH risk must have at least one linked test ID
 - Use sequential IDs: R-001, R-002... and T-001, T-002...
+- Keep all field values short: titles under 8 words, descriptions under 20 words, given/when/then under 15 words each
 - Base all findings on the actual spec provided — do not invent features not in the spec
 - Test framework for the analysis context: ${framework}
 - JSON only, no other text`;
@@ -197,7 +199,8 @@ export async function runFastAnalysis(
 ): Promise<AnalysisResult> {
   const raw = await provider.complete(
     SYSTEM_PROMPT,
-    buildPrompt(request.specText, request.inputType, request.framework)
+    buildPrompt(request.specText, request.inputType, request.framework),
+    { max_tokens: 1800, temperature: 0.2 }
   );
 
   let parsed: z.infer<typeof FastResponseSchema>;
