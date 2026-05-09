@@ -5,23 +5,27 @@
 | Mode | Use case | Requires |
 |---|---|---|
 | `PROVIDER=mock` | Local development, CI, safe fallback | Nothing — no API key |
-| `PROVIDER=api` | Public Qwen demo, controlled live demo | `API_KEY` (server-side only) |
+| `PROVIDER=api` | Public demo, controlled live demo | `API_KEY` (server-side only) |
 | `PROVIDER=amd` | AMD MI300X inference | vLLM endpoint — not active yet |
 
 ---
 
-## Public demo deploy — Qwen Fast Mode
+## Public demo deploy — API Fast Mode
 
-SpecSmith's public demo uses **Qwen Fast Mode**: a single real Qwen call that
-generates a complete Forge Report based on the user's actual spec. This fits
+SpecSmith's public demo uses `PUBLIC_DEMO_FAST_MODE=true`: a single real LLM call
+that generates a complete Forge Report based on the user's actual spec. This fits
 within Vercel Hobby's function limits while returning context-aware, non-mock output.
+
+The production deployment uses a reliable low-cost OpenAI-compatible model. The same
+code path works with any provider — swap `API_BASE_URL` and `API_MODEL` to use
+Qwen via OpenRouter or a future AMD/vLLM endpoint without code changes.
 
 ```bash
 # Platform env vars (Vercel / Netlify / Railway) — do not commit
 PROVIDER=api
-API_KEY=<your_openrouter_key>
-API_BASE_URL=https://openrouter.ai/api/v1
-API_MODEL=qwen/qwen-2.5-7b-instruct
+API_KEY=<your_openai_key>
+API_BASE_URL=https://api.openai.com/v1
+API_MODEL=gpt-4.1-nano
 API_TIMEOUT_MS=25000
 API_ROUTE_TIMEOUT_MS=50000
 PUBLIC_DEMO_FAST_MODE=true
@@ -29,9 +33,9 @@ ENABLE_PROVIDER_FALLBACK=false
 DEBUG_AGENT_OUTPUT=false
 ```
 
-**What Qwen Fast Mode does**:
-- One `POST /chat/completions` call to Qwen 7B via OpenRouter
-- Qwen analyzes the user's spec and returns a complete JSON Forge Report
+**What fast mode does**:
+- One `POST /chat/completions` call to the configured model
+- Model analyzes the user's spec and returns a complete JSON Forge Report
 - 4–6 risks, 6–10 test cases, deterministic test file, coverage score
 - Output is based on the user's actual spec — not canned fixture data
 - `providerMode` in the response: `"API mode · Qwen fast demo"`
@@ -40,9 +44,10 @@ DEBUG_AGENT_OUTPUT=false
 
 | Model | Role | Suitable for Vercel Hobby (fast mode) |
 |---|---|---|
-| `qwen/qwen-2.5-72b-instruct` | Full pipeline validation evidence | No — ~325s total |
-| `qwen/qwen-2.5-7b-instruct` | **Public Vercel demo** | Yes — single call ~10–25s |
+| `gpt-4.1-nano` | **Production public demo** | Yes — reliable, fast, low-cost |
 | `gpt-4o-mini` | Controlled local test | Yes — fast mode or full pipeline |
+| `qwen/qwen-2.5-7b-instruct` | Qwen path (available, not production default) | Yes — via OpenRouter |
+| `qwen/qwen-2.5-72b-instruct` | Qwen validation evidence | No — ~325s total |
 
 **Timeout strategy**:
 - `API_TIMEOUT_MS=25000` — per-model-call timeout via `AbortController` (25s per call)
@@ -50,7 +55,7 @@ DEBUG_AGENT_OUTPUT=false
   before Vercel's platform can return an HTML timeout page
 
 **Failure behavior** (`ENABLE_PROVIDER_FALLBACK=false`):
-If Qwen times out, returns a non-2xx response, or produces malformed output:
+If the provider times out, returns a non-2xx response, or produces malformed output:
 - HTTP 504 (deadline) or 502 (parse failure) with JSON `{ "error": "..." }`
 - Frontend shows the error message — no raw HTML, no stack trace
 - User can retry with a shorter spec or try again later
@@ -129,22 +134,25 @@ npx tsc --noEmit     # type check
 
 ## Platform env vars reference (Vercel)
 
-**Public Qwen demo — Fast Mode (Vercel Hobby):**
+**Public demo — Fast Mode (Vercel Hobby):**
 ```
 PROVIDER=api
-API_KEY=<openrouter_key>
-API_BASE_URL=https://openrouter.ai/api/v1
-API_MODEL=qwen/qwen-2.5-7b-instruct
+API_KEY=<openai_key>
+API_BASE_URL=https://api.openai.com/v1
+API_MODEL=gpt-4.1-nano
 API_TIMEOUT_MS=25000
 API_ROUTE_TIMEOUT_MS=50000
 PUBLIC_DEMO_FAST_MODE=true
 ENABLE_PROVIDER_FALLBACK=false
 DEBUG_AGENT_OUTPUT=false
 ```
-`PUBLIC_DEMO_FAST_MODE=true` uses a single Qwen call for the full Forge Report.
+`PUBLIC_DEMO_FAST_MODE=true` uses a single LLM call for the full Forge Report.
 `API_TIMEOUT_MS=25000` caps the single model call. `API_ROUTE_TIMEOUT_MS=50000`
 returns a JSON 504 before Vercel's platform timeout. `ENABLE_PROVIDER_FALLBACK=false`
 ensures failures show a friendly error, not a canned report.
+
+To use Qwen via OpenRouter instead: set `API_BASE_URL=https://openrouter.ai/api/v1`,
+`API_MODEL=qwen/qwen-2.5-7b-instruct`, and `API_KEY=<openrouter_key>`. No code changes.
 
 **Safe local mock deploy (no API key required):**
 ```

@@ -44,7 +44,7 @@ _(148 characters — within the 150–200 character guidance)_
 
 **Coverage gaps**: The gap report explicitly calls out what was not tested and why. This is as valuable as the passing tests.
 
-**Public demo**: The live demo at https://specsmith.vercel.app/ uses **Qwen Fast Mode** (`PUBLIC_DEMO_FAST_MODE=true`): a single real Qwen call with `qwen/qwen-2.5-7b-instruct` via OpenRouter. Qwen analyzes the user's actual spec and returns a complete Forge Report (risks, test matrix, test file, coverage score) — not canned fixture data. `providerMode` shows `"API mode · Qwen fast demo"`. If Qwen fails, the app returns a friendly JSON error; it does not silently fall back to mock output. The heavier `qwen/qwen-2.5-72b-instruct` model confirmed full pipeline quality (score 95/100) but is too slow for public Vercel.
+**Public demo**: The live demo at https://specsmith.vercel.app/ uses `PROVIDER=api` with `PUBLIC_DEMO_FAST_MODE=true`: a single real LLM call that analyzes the user's actual spec and returns a complete Forge Report (risks, test matrix, test file, coverage score) — not canned fixture data. The production deployment uses a reliable low-cost OpenAI-compatible model. If the provider fails, the app returns a friendly JSON error; it does not silently fall back to mock output. `qwen/qwen-2.5-72b-instruct` confirmed full pipeline quality (score 95/100) via the same provider abstraction; see `docs/qwen-validation.md`. The Qwen provider path (OpenRouter) remains implemented and available by changing `API_BASE_URL` and `API_MODEL` — no code changes required.
 
 **Controlled API mode**: The codebase supports `PROVIDER=api`, which calls any OpenAI-compatible endpoint. This mode was validated end-to-end with two models: `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (via OpenRouter). Both produced schema-valid output through all five pipeline stages, including the Test Writer's delimiter format and the Zod schema case normalization.
 
@@ -67,7 +67,7 @@ _(148 characters — within the 150–200 character guidance)_
 | Test Writer format | Delimiter-based output (`===METADATA===` / `===CODE===` / `===END===`) to avoid JSON escaping failures |
 | Error handling | `API_TIMEOUT_MS` per-call timeout + `API_ROUTE_TIMEOUT_MS` route deadline; provider failures return friendly JSON errors; frontend safe-parses all responses; fast mode schema-validates Qwen output with Zod |
 | Secrets | Server-side only; `API_KEY` never exposed to browser |
-| Public deploy | Vercel — `PROVIDER=api` / Qwen via OpenRouter, `ENABLE_PROVIDER_FALLBACK=false` |
+| Public deploy | Vercel — `PROVIDER=api`, `PUBLIC_DEMO_FAST_MODE=true`, reliable OpenAI-compatible model, `ENABLE_PROVIDER_FALLBACK=false` |
 | Planned inference | AMD Developer Cloud + vLLM + Qwen/Qwen2.5-72B-Instruct on MI300X |
 
 ---

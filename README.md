@@ -32,7 +32,7 @@ SpecSmith is not a test generator. It is an agentic QA workflow — five agents 
 
 **Live demo**: https://specsmith.vercel.app/ — no account required.
 
-The public demo uses **Qwen Fast Mode** (`PUBLIC_DEMO_FAST_MODE=true`): a single real Qwen call that analyzes the user's actual spec and returns a complete Forge Report. Output is context-aware — not canned fixture data. `providerMode` in the report shows `"API mode · Qwen fast demo"`. If Qwen fails, the app returns a friendly error — it never silently substitutes a mock report. Controlled API validation has been confirmed with both `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (OpenRouter).
+The public demo runs `PROVIDER=api` with `PUBLIC_DEMO_FAST_MODE=true`: a single real LLM call that analyzes the user's actual spec and returns a complete Forge Report — not canned fixture data. The production deployment uses a reliable low-cost OpenAI-compatible model. If the provider fails, the app returns a friendly error; it never silently substitutes a mock report. Controlled validation has been confirmed with both `gpt-4o-mini` (OpenAI) and `qwen/qwen-2.5-72b-instruct` (OpenRouter). The Qwen provider path remains implemented and documented — see [docs/qwen-validation.md](docs/qwen-validation.md).
 
 **Demo flow:**
 
@@ -86,7 +86,8 @@ Forge Report
 | `mock` | ✅ Available | Safe fallback — no API key, deterministic fixture output |
 | `api` / gpt-4o-mini | ✅ Validated | Controlled local test (OpenAI) |
 | `api` / Qwen 2.5 72B | ✅ Validated | Full pipeline evidence — too slow for Vercel, see docs |
-| `api` / Qwen 2.5 7B · fast mode | ✅ Public demo | OpenRouter, `PUBLIC_DEMO_FAST_MODE=true`, single call, context-aware |
+| `api` / gpt-4.1-nano · fast mode | ✅ Public demo | OpenAI, `PUBLIC_DEMO_FAST_MODE=true`, single call, context-aware |
+| `api` / Qwen 2.5 7B · fast mode | ✅ Available | OpenRouter path implemented; not the production default |
 | `amd` / vLLM / Qwen | 🟡 Planned | Pending AMD Developer Cloud credits |
 
 The `amd` provider path is present and documented, but not live. No AMD Developer Cloud runtime has been configured — AMD mode is pending GPU credit allocation.
@@ -126,7 +127,7 @@ SpecSmith was designed so the provider layer can point to a vLLM endpoint runnin
 | AI provider abstraction | OpenAI-compatible chat completions interface |
 | Provider modes | `mock` (fixtures), `api` (any OpenAI-compatible endpoint), `amd` (planned) |
 | Validated models | gpt-4o-mini (OpenAI), qwen/qwen-2.5-72b-instruct (OpenRouter) |
-| Deployment | Vercel — `PROVIDER=api`, Qwen 7B via OpenRouter, `ENABLE_PROVIDER_FALLBACK=false` |
+| Deployment | Vercel — `PROVIDER=api`, `PUBLIC_DEMO_FAST_MODE=true`, reliable OpenAI-compatible model, `ENABLE_PROVIDER_FALLBACK=false` |
 | Planned inference | AMD Developer Cloud + vLLM + Qwen on MI300X |
 
 ---
@@ -180,13 +181,13 @@ Open http://localhost:3000.
 
 ## Environment Variables
 
-**Public Vercel Hobby demo** (Qwen Fast Mode — single call, context-aware):
+**Public Vercel Hobby demo** (fast mode — single call, context-aware):
 
 ```bash
 PROVIDER=api
-API_BASE_URL=https://openrouter.ai/api/v1
-API_MODEL=qwen/qwen-2.5-7b-instruct
-API_KEY=your_openrouter_key_here
+API_BASE_URL=https://api.openai.com/v1
+API_MODEL=gpt-4.1-nano
+API_KEY=your_openai_key_here
 API_TIMEOUT_MS=25000
 API_ROUTE_TIMEOUT_MS=50000
 PUBLIC_DEMO_FAST_MODE=true
@@ -194,10 +195,13 @@ ENABLE_PROVIDER_FALLBACK=false
 DEBUG_AGENT_OUTPUT=false
 ```
 
-`PUBLIC_DEMO_FAST_MODE=true` uses one Qwen call for the full Forge Report.
+`PUBLIC_DEMO_FAST_MODE=true` uses one LLM call for the full Forge Report.
 `API_TIMEOUT_MS=25000` caps that single call. `API_ROUTE_TIMEOUT_MS=50000` ensures
 the route returns JSON 504 before Vercel's platform timeout page. Provider failures
 surface a friendly error in the UI — no canned mock report.
+
+The same config works with any OpenAI-compatible provider: replace `API_BASE_URL`
+and `API_MODEL` to point at OpenRouter/Qwen or a future AMD/vLLM endpoint.
 
 **Mock mode** (local development — no API key required):
 
@@ -223,7 +227,7 @@ only — never exposed to the browser. Never commit `.env.local`.
 
 ## Deployment
 
-- Public demo uses Qwen Fast Mode — single real Qwen call, context-aware, `ENABLE_PROVIDER_FALLBACK=false`
+- Public demo uses `PROVIDER=api` with `PUBLIC_DEMO_FAST_MODE=true` — single LLM call, context-aware, `ENABLE_PROVIDER_FALLBACK=false`
 - `PROVIDER=mock` is available for local use and CI — no API key required
 - Do not deploy `PROVIDER=api` without rate limiting — it is already built into the route
 - See [docs/deployment.md](docs/deployment.md) for the full deployment safety guide
@@ -245,7 +249,7 @@ only — never exposed to the browser. Never commit `.env.local`.
 
 ## Final Submission Notes
 
-- **Public demo** uses Qwen Fast Mode (`PUBLIC_DEMO_FAST_MODE=true`): one real Qwen call, context-aware output, `providerMode: "API mode · Qwen fast demo"` — no canned mock output
+- **Public demo** uses `PROVIDER=api` with `PUBLIC_DEMO_FAST_MODE=true` and a reliable low-cost OpenAI-compatible model — one real LLM call, context-aware, no canned mock output
 - **Qwen 72B validation** confirmed end-to-end (`qwen/qwen-2.5-72b-instruct`, score 95/100); too slow for Vercel, used as evidence only
 - **gpt-4o-mini validation** confirmed end-to-end (OpenAI controlled test)
 - **Qwen validation evidence** documented in `docs/qwen-validation.md`
