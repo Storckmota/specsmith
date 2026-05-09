@@ -25,7 +25,7 @@ Qwen via OpenRouter or a future AMD/vLLM endpoint without code changes.
 PROVIDER=api
 API_KEY=<your_openai_key>
 API_BASE_URL=https://api.openai.com/v1
-API_MODEL=gpt-4.1-nano
+API_MODEL=gpt-4o-mini
 API_TIMEOUT_MS=25000
 API_ROUTE_TIMEOUT_MS=50000
 PUBLIC_DEMO_FAST_MODE=true
@@ -44,7 +44,7 @@ DEBUG_AGENT_OUTPUT=false
 
 | Model | Role | Suitable for Vercel Hobby (fast mode) |
 |---|---|---|
-| `gpt-4.1-nano` | **Production public demo** | Yes — reliable, fast, low-cost |
+| `gpt-4o-mini` | **Production public demo** | Yes — reliable, fast, low-cost |
 | `gpt-4o-mini` | Controlled local test | Yes — fast mode or full pipeline |
 | `qwen/qwen-2.5-7b-instruct` | Qwen path (available, not production default) | Yes — via OpenRouter |
 | `qwen/qwen-2.5-72b-instruct` | Qwen validation evidence | No — ~325s total |
@@ -139,7 +139,7 @@ npx tsc --noEmit     # type check
 PROVIDER=api
 API_KEY=<openai_key>
 API_BASE_URL=https://api.openai.com/v1
-API_MODEL=gpt-4.1-nano
+API_MODEL=gpt-4o-mini
 API_TIMEOUT_MS=25000
 API_ROUTE_TIMEOUT_MS=50000
 PUBLIC_DEMO_FAST_MODE=true

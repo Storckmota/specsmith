@@ -86,7 +86,7 @@ Forge Report
 | `mock` | ✅ Available | Safe fallback — no API key, deterministic fixture output |
 | `api` / gpt-4o-mini | ✅ Validated | Controlled local test (OpenAI) |
 | `api` / Qwen 2.5 72B | ✅ Validated | Full pipeline evidence — too slow for Vercel, see docs |
-| `api` / gpt-4.1-nano · fast mode | ✅ Public demo | OpenAI, `PUBLIC_DEMO_FAST_MODE=true`, single call, context-aware |
+| `api` / gpt-4o-mini · fast mode | ✅ Public demo | OpenAI, `PUBLIC_DEMO_FAST_MODE=true`, single call, context-aware |
 | `api` / Qwen 2.5 7B · fast mode | ✅ Available | OpenRouter path implemented; not the production default |
 | `amd` / vLLM / Qwen | 🟡 Planned | Pending AMD Developer Cloud credits |
 
@@ -186,7 +186,7 @@ Open http://localhost:3000.
 ```bash
 PROVIDER=api
 API_BASE_URL=https://api.openai.com/v1
-API_MODEL=gpt-4.1-nano
+API_MODEL=gpt-4o-mini
 API_KEY=your_openai_key_here
 API_TIMEOUT_MS=25000
 API_ROUTE_TIMEOUT_MS=50000

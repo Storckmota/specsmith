@@ -275,7 +275,7 @@ export async function runFastAnalysis(
       reviewerFeedback: parsed.reviewerFeedback,
       plannerRevised: false,
     },
-    providerMode: "API mode · Qwen fast demo",
+    providerMode: "API mode · Fast demo",
     agentTimeline,
   };
 }

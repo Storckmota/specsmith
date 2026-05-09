@@ -63,6 +63,15 @@ const BENEFIT_CARDS = [
   },
 ];
 
+const PROGRESS_MESSAGES = [
+  "Reading your spec",
+  "Mapping risky flows",
+  "Planning test coverage",
+  "Drafting executable tests",
+  "Reviewing coverage gaps",
+  "Preparing Forge Report",
+];
+
 const TELEMETRY_LINES = [
   { ts: "00:00", msg: "Resident QA forge initializing...", style: "text-violet-400" },
   { ts: "00:01", msg: "Spec Parser active — extracting scope and implicit assumptions.", style: "text-slate-400" },
@@ -131,8 +140,27 @@ export default function HomePage() {
   const [cooldown, setCooldown] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [progressIdx, setProgressIdx] = useState(0);
 
   useReveal();
+
+  useEffect(() => {
+    if (!isLoading) {
+      setElapsed(0);
+      setProgressIdx(0);
+      return;
+    }
+    const elapsedTimer = setInterval(() => setElapsed((s) => s + 1), 1000);
+    const msgTimer = setInterval(
+      () => setProgressIdx((i) => (i + 1) % PROGRESS_MESSAGES.length),
+      2500
+    );
+    return () => {
+      clearInterval(elapsedTimer);
+      clearInterval(msgTimer);
+    };
+  }, [isLoading]);
 
   const handleLoadExample = (key: keyof typeof EXAMPLE_SPECS) => {
     const example = EXAMPLE_SPECS[key];
@@ -487,6 +515,26 @@ export default function HomePage() {
                   )}
                 </button>
               </div>
+
+              {isLoading && (
+                <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 px-4 py-4">
+                  <div className="flex items-start gap-2.5">
+                    <span className="mt-0.5 h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-violet-400" />
+                    <span className="text-sm font-medium text-violet-200">
+                      SpecSmith is forging your QA report. This may take a few moments.
+                    </span>
+                  </div>
+                  <div className="mt-2.5 flex items-center justify-between gap-4">
+                    <p className="text-xs text-slate-400">{PROGRESS_MESSAGES[progressIdx]}</p>
+                    <p className="flex-shrink-0 font-mono text-xs text-slate-600">Running for {elapsed}s...</p>
+                  </div>
+                  {elapsed >= 25 && (
+                    <p className="mt-2 text-xs text-amber-300/80">
+                      Still working — complex specs can take longer. Please keep this tab open.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {error && (
                 <div className="rounded-xl border border-rose-400/30 bg-rose-950/30 px-4 py-3 text-sm text-rose-200">
